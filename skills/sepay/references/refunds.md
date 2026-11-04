@@ -19,7 +19,7 @@ curl -sL https://developer.sepay.vn/vi/sepay-api/v2/hoan-tien.md | sed -n '/^<Ca
 The API has the final word: `422 unsupported_bank` = the account's bank cannot refund, `422 not_available` = refunds not enabled for that account. Sandbox skips this check, so a refund that works on Sandbox can still fail on production.
 
 1. Prerequisites: API token, bank account UUID (`/v2/bank-accounts`), refunds enabled for that account.
-2. Generate an idempotency key from business data and **store it before the call**: `refund-{order_code}-{n}` (≤ 100 chars, one key per refund).
+2. Generate an idempotency key from business data and **store it before the call**: `refund-{order_code}-{n}` (≤ 100 chars, one key per refund). Take `n` from your refund rows with a UNIQUE (order, n) constraint, not from a count read in app code, or two parallel refunds get the same key and one is silently dropped.
 3. Send: by order `POST /v2/bank-accounts/{ba_uuid}/orders/{order_uuid}/refund`, or by collected transaction (payment without an order), header `X-Idempotency-Key`. Empty `refund_amount` = refund all that remains of that transaction.
 4. Handle the answer:
    - 200 → store `refund_id`, read `status` (`pending` → `succeeded` | `failed` | `rejected`).

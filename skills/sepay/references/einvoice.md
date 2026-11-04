@@ -21,7 +21,7 @@ Issue, adjust, replace or look up Vietnamese e-invoices for a household business
 
 ## Other best practice
 
-- Make the create call idempotent on your side (store your order id ↔ `tracking_code`), so a crash does not issue two invoices.
+- Make the create call idempotent on your side: store an intent row for the order **before** the call, then its `tracking_code`; after a crash, look the order up before creating again, so it never gets two invoices (`integration-design.md` § 2).
 - Tax rates and decimal quantities have their own rules: read `#thong-tin-thue-suat` and `#so-luong-thap-phan` on the create page before building line items.
 - Corrections go through adjustment / replacement invoices, never deletion of an issued invoice; only drafts can be deleted.
 - Treat 4xx validation errors as final (fix the data), 5xx / timeouts as retryable with the documented schedule.

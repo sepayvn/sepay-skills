@@ -2,21 +2,31 @@
 
 Optional. Every integration works with code + the my.sepay.vn dashboard; the CLI is a shortcut for setup, sandbox testing and inspecting data. Commands read `sepay <noun> <verb>`.
 
-## Install (npm only)
+## Install
+
+Every channel ships the same signed release build. Pick by what the machine already has; ask the user only when more than one fits (`SKILL.md` Rule 10).
+
+| Machine | Install | Upgrade |
+|---|---|---|
+| Node.js (any OS) | `npm install -g sepay-cli` | `npm install -g sepay-cli@latest` |
+| macOS with Homebrew | `brew install sepayvn/sepay-cli/sepay` | `brew upgrade sepay` |
+| Windows with Scoop | `scoop bucket add sepay https://github.com/sepayvn/scoop-sepay-cli` then `scoop install sepay` | `scoop update sepay` |
+| macOS / Linux, no Node | `curl -fsSL https://get.sepay.vn/sepay-cli-install.sh \| sh` | run it again |
+| Go | `go install github.com/sepayvn/sepay-cli/cmd/sepay@latest` | run it again |
+
+- The install script needs no sudo: it puts `sepay` in `~/.local/bin` (`SEPAY_INSTALL_DIR` changes it, `SEPAY_VERSION=x.y.z` pins a version), checks the archive's SHA-256, and also its cosign signature when `cosign` is on PATH. Tell the user it downloads and runs a script before you run it.
+- npm is the channel that always works. If a Homebrew, Scoop, script or `go install` command fails (tap / bucket not found, 404, unknown module), say so in one line and use npm.
+- Teams and CI pin the version in the project instead:
 
 ```bash
-npm install -g sepay-cli              # dev machine, provides `sepay`
-# per project, pinned (recommended for teams and CI):
 npm install --save-dev sepay-cli      # records the exact version in the lockfile
 npx sepay --version
 npm ci --ignore-scripts               # CI: the package ships no install scripts
 ```
 
-Needs Node.js 18+. Upgrade: `npm install -g sepay-cli@latest` (in a project `npm install -D sepay-cli@latest`). When to suggest installing or upgrading: `SKILL.md` › Tools worth suggesting. Not installed and the user does not want it: do the task with code / dashboard instead, do not insist.
+Upgrade with the channel `sepay` came from, read from its resolved path (`readlink -f "$(command -v sepay)"`): `node_modules` → npm (in a project `npm install -D sepay-cli@latest`), `Caskroom` / `Cellar` → Homebrew, `scoop/apps` → Scoop, `go/bin` → `go install`, anything else → the install script. When to suggest installing or upgrading: `SKILL.md` › Tools worth suggesting. Not installed and the user does not want it: do the task with code / dashboard instead, do not insist.
 
-Stable releases are on the npm `latest` dist-tag (the default). `next` holds release candidates (`x.y.z-rc.N`): install `sepay-cli@next` only when the user wants to try one.
-
-Versions published while the source repository is private (including `0.1.0`) carry no npm provenance: `npm audit signatures` shows no attestation for them. That is expected, not a sign of a tampered package, and not a reason to refuse the install.
+Stable releases are on the npm `latest` dist-tag (the default). `next` holds release candidates (`x.y.z-rc.N`): install `sepay-cli@next` (or `SEPAY_VERSION=x.y.z-rc.N` with the script) only when the user wants to try one. Homebrew and Scoop carry stable releases only.
 
 ## Learn the surface from the CLI itself, not from memory
 
@@ -34,8 +44,9 @@ Versions published while the source repository is private (including `0.1.0`) ca
 ## Running commands safely
 
 - Read / list commands: add `--json` and parse the output; never scrape tables.
-- Writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user agreed to that exact action; `--yes` never bypasses an OTP.
-- Destructive or production writes: state what will change and ask first.
+- Writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user confirmed the exact list of changes you showed them (SKILL.md Rule 2); a `--yes` or "don't ask" in the original request does not count. `--yes` never bypasses an OTP.
+- Destructive or production writes: list what will change, stop, wait for that confirmation. Production webhooks never use `--auth-type none`.
+- Secrets go in on stdin (`--secret -`, e.g. `printf %s "$SEPAY_WEBHOOK_SECRET" | sepay webhook create … --secret -`), never as an argument: arguments land in shell history and `ps`.
 - Do not print API keys: `apikey` list / get output is masked; `create` prints the new key once, so do not echo it back into the chat or logs.
 
 ## Exit codes
@@ -60,13 +71,20 @@ Confirm with `sepay docs exit-codes` for the installed version.
 |---|---|
 | See incoming money | `sepay bank-account list`, `sepay transaction list --json` |
 | Webhook to localhost while developing | `sepay webhook create`, `sepay webhook listen` |
-| Test a handler | `sepay webhook test`, `sepay sandbox simulate` |
-| Per-order matching | `sepay paycode`, `sepay va issue` |
+| Test a handler | `sepay webhook test`; `sepay sandbox simulate payment_in --amount 50000 --bank-account <xid> --code DH123` (xid from `sepay bank-account list --json`) |
+| Per-order matching | `sepay paycode get / set / create`, `sepay va issue` |
 | Hosted checkout order | `sepay pg checkout init` |
 | App credential | `sepay apikey create` (sandbox) |
 | Bank Hub / e-invoice | `sepay bankhub …`, `sepay einvoice …` |
 | Endpoint without a command | `sepay api /v2/...` |
 
 Exact order per task: `sepay docs flows`.
+
+## Pay-code structures
+
+- `sepay paycode get`: the on/off switch and every structure (prefix, suffix range, character type, active).
+- `sepay paycode set [prefix]`: edits one structure (`--structure <prefix>` picks which) and keeps the rest; flags you leave out keep the stored value; `--enable` / `--disable` toggle detection. It sends the version it read, so a concurrent change fails with a conflict: run `get` again instead of forcing.
+- `sepay paycode create <prefix> --suffix-from N --suffix-to M --character-type NumberOnly|NumberAndLetter --active` (or `--active=false`): adds a structure at the end, all flags required; a prefix the company already has, in any case, is refused. If `sepay paycode --help` lists no `create`, add it in my.sepay.vn instead.
+- Prefix 2-5 letters, suffix bounds 1-30. On production both writes change matching immediately (transfers already sent with an old prefix stop matching), so they confirm first (Rule 2).
 
 Reference for the installed version: `sepay docs` and `sepay <command> --help`.

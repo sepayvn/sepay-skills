@@ -29,9 +29,7 @@ Install with `sepayvn/sepay-skills`, not an SSH clone URL: skills installed from
 npx skills update
 ```
 
-Installed skills do not update on their own. A new version is a change to the files under `skills/<name>/` on `main`; `update` compares that folder with what you installed. With `skills` 1.7.4, `npx skills check` is the same command as `update` and installs right away.
-
-The `sepay` skill also suggests updating when your installed `sepay` CLI is newer than the CLI version it was written for (`metadata.cli` in `skills/sepay/SKILL.md`).
+Installed skills do not update on their own. A new version is a change to the files under `skills/<name>/` on `main`; `update` compares that folder with what you installed. `npx skills check` may install the new version right away, like `update`.
 
 ## Remove
 
@@ -45,7 +43,7 @@ DISABLE_TELEMETRY=1 npx skills remove sepay
 
 | Skill | What it covers |
 |---|---|
-| `sepay` | Choosing an integration, webhooks, VietQR, payment gateway and IPN, SePay API, refunds, Bank Hub, e-invoices, Speaker API, OAuth2, plugins, supported banks, sandbox / Test mode and go-live, the `sepay` CLI, SePay MCP. Sandbox first; suggests installing the `sepay` CLI (`npm install -g sepay-cli`) and connecting SePay MCP when they help, and installs nothing without your approval. Facts that change (banks, limits, hosts) are read from developer.sepay.vn at answer time. |
+| `sepay` | Choosing an integration, webhooks, VietQR, payment gateway and IPN, SePay API, refunds, Bank Hub, e-invoices, Speaker API, OAuth2, plugins, supported banks, sandbox / Test mode and go-live, the `sepay` CLI, SePay MCP. Sandbox first; suggests installing the `sepay` CLI (npm, Homebrew, Scoop or the install script) and connecting SePay MCP when they help, and installs nothing without your approval. Facts that change (banks, limits, hosts) are read from developer.sepay.vn at answer time. |
 
 ## Support
 

@@ -10,7 +10,7 @@ Only when the user needs buyers to pay by card (Visa / Mastercard / JCB) or NAPA
 2. Get sandbox `merchant_id` + `secret_key` (my.sepay.vn → Cổng thanh toán). Keep the secret server side.
 3. Create the order server side: build the checkout form fields (`merchant`, `operation=PURCHASE`, `order_amount`, `currency=VND`, `order_invoice_number`, `order_description`, `success_url` / `error_url` / `cancel_url`, optional `payment_method`, `customer_id`), sign them, POST the form to `{checkout host}/v1/checkout/init`. Or use the PHP / Node SDK.
 4. Configure the IPN URL (Cổng thanh toán → Cấu hình → IPN) and auth type.
-5. Handle IPN: verify `X-Secret-Key` (when auth type SECRET_KEY), find the order by `order.order_invoice_number`, check `notification_type` (e.g. `ORDER_PAID`) and amount, update once, reply HTTP 200.
+5. Handle IPN: verify `X-Secret-Key` (when auth type SECRET_KEY), find the order by `order.order_invoice_number`, check `notification_type` (e.g. `ORDER_PAID`) and amount, mark it paid with a conditional transition (`integration-design.md` § 3), reply HTTP 200.
 6. Redirect pages (`success_url`…) only show a message; the order is paid only after the IPN (or an order API check).
 7. Test in sandbox in the browser, then switch hosts and credentials for production.
 
@@ -23,9 +23,9 @@ Sandbox: API `https://pgapi-sandbox.sepay.vn`, checkout `https://pay-sandbox.sep
 - Signature: only the allowed fields, **in the documented order** (do not sort), joined as `field=value` with commas, `base64(HMAC-SHA256(secret, string))` raw bytes. A reordered or extra field breaks it. Read `#xac-thuc-chu-ky` for the current field list.
 - Never compute the signature in the browser; never expose `secret_key`.
 - IPN is the source of truth, not the redirect; the buyer may close the tab.
-- Idempotent IPN handler: the same notification can arrive more than once; update the order only if it is not already paid.
+- Idempotent IPN handler: the same notification can arrive more than once. "Update only if not already paid" must be one conditional `UPDATE … WHERE status = 'pending'` with the affected rows checked, not a read followed by a write; only the request that changed the row fulfils the order.
 - `order_invoice_number` must be unique per order; use your internal order code so IPN maps straight back.
-- IPN URL: public HTTPS only, never localhost or a private IP.
+- IPN URL: a public address, never localhost or a private IP; HTTPS recommended in production, HTTP not blocked (SKILL.md Rule 4).
 - Recurring card payments are not supported: do not design or promise subscriptions on the gateway.
 - Sandbox data is isolated from production; switching = change hosts + credentials + IPN URL, nothing else.
 - Bank transfer (`payment_method=BANK_TRANSFER`) pays into a bank account the merchant linked in my.sepay.vn, so the banks and account types it works with are the SePay Webhooks supported-banks table: read it via `banks.md` (do not answer from memory). An account marked "chỉ qua VA" there needs a VA chosen in the gateway's bank transfer settings, or the gateway rejects the setup.

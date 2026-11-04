@@ -29,16 +29,18 @@ Webhooks and IPNs are sent by SePay's servers. While the handler runs on the use
 1. **SePay Webhooks** (sandbox and production): `sepay webhook listen --forward localhost:3000/<path>` receives a copy of every delivery (same body and headers, so signature checks behave as in production) and forwards it to the local handler. `sepay webhook test` sends a sample delivery. Details: `sepay webhook listen --help`.
 2. **Bank Hub IPN** (sandbox): `sepay bankhub ipn listen`.
 3. **Only when the CLI cannot forward the callback** (payment gateway IPN) or the user cannot use the CLI: expose the port with a tunnel. Check what is installed (`command -v cloudflared`, `command -v ngrok`); offer to install one only with the user's go-ahead, then run e.g. `cloudflared tunnel --url http://localhost:3000` and use the HTTPS URL it prints.
-4. A server with a public HTTPS domain uses that URL directly.
+4. A server with a public domain uses that URL directly (HTTPS recommended, HTTP accepted).
 5. Never register `localhost`, `127.0.0.1`, `192.168.x`, `10.x` or other private addresses as the callback URL.
 
-Test mode accepts HTTP and self-signed certificates; live requires a valid certificate.
+HTTP is accepted in Test mode and on live. An HTTPS URL needs a valid certificate on live (self-signed is rejected); Test mode also accepts self-signed.
 
 ## Go-live checklist
 
 - Production base URL and production credentials (new token / merchant key / client secret), stored as secrets.
-- Webhook / IPN URL: public HTTPS with a valid certificate; auth on (HMAC-SHA256 or API key / secret key); optionally SePay IP allowlist (`/vi/dia-chi-ip`).
-- Handler replies within the time limit with the exact success body; idempotent; raw payload logged.
+- Webhook / IPN URL: public; HTTPS with a valid certificate recommended (HTTP works, with payload and headers in clear text); auth on (HMAC-SHA256 or API key / secret key); optionally SePay IP allowlist (`/vi/dia-chi-ip`).
+- Handler replies within the time limit; `success: true` only when that transfer paid an order, `false` for unmatched / under / duplicate payments (`webhook.md` § Response); idempotent; state changes are conditional transitions (`integration-design.md` § 3).
+- Raw payload kept in a restricted table; logs mask account numbers and carry no memo, names or secrets (§ 6).
+- An empty secret setting rejects every callback (§ 5).
 - Reconciliation job running (`sepay-api.md`); failure alerts enabled (Telegram / email, `/vi/sepay-webhooks/giam-sat`).
 - Payment-code / VA configuration recreated on live (Test mode settings do not carry over).
 - Rate limits respected; secrets not in the repo or the frontend.

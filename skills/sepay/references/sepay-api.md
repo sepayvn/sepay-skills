@@ -8,7 +8,7 @@ Read transactions / bank accounts / virtual accounts, create orders with a dedic
 
 - Base URL: production `https://userapi.sepay.vn/v2`, sandbox `https://userapi-sandbox.sepay.vn/v2` (same request / response shapes).
 - Auth: `Authorization: Bearer <api_key>` (my.sepay.vn → Cài đặt công ty → API Keys). The key acts for the **whole company**: server side only, never in a browser or mobile app.
-- Rate limit per IP (currently 3 req/s, checked before auth, HTTP 429): back off and retry; never poll in tight loops.
+- Rate limit per IP (value: `/vi/sepay-api/v2/xac-thuc#rate-limiting`; checked before auth, HTTP 429): back off and retry; never poll in tight loops.
 
 ## Flow (orders + VA)
 
@@ -27,11 +27,11 @@ Read transactions / bank accounts / virtual accounts, create orders with a dedic
 ## Best practice and traps
 
 1. **VA per order**: one order one VA (or VA prefix), matching is automatic when money arrives; cancel when finished. Read "Vòng đời VA theo đơn hàng" before designing expiry.
-2. **Reconcile with webhooks**: webhook = push, realtime confirmation; `GET /v2/transactions` = pull, backfill when a webhook was missed (server down, timeout, retries exhausted). Cron every 15–30 min, filter by `transaction_date_from` / `to` or `since_id`, match on transaction `id` (UUID), insert only what is missing, idempotently. See `/vi/sepay-webhooks/doi-soat-giao-dich`.
+2. **Reconcile with webhooks**: webhook = push, realtime confirmation; `GET /v2/transactions` = pull, backfill when a webhook was missed (server down, timeout, retries exhausted). Pull new rows with `since_id`, match each to an order by code / VA and amount, never by id: the API `id` (UUID) is not the webhook `id` (integer). One order on demand: `q=<order code>`, then exact `code` match. Steps: `integration-design.md` § 1 Reconciliation. See `/vi/sepay-webhooks/doi-soat-giao-dich`.
 3. **Avoid data mismatches**:
    - `order_code` is unique per company bank account; use your internal order code so webhook codes map to exactly one order.
    - A cancelled or expired VA no longer receives money.
-   - Exact-amount vs partial payment, open orders and over-payment differ per bank: design the handler from `#ngan-hang-ho-tro` and `#thanh-toan-mot-phan` (step 2), and expect several webhooks for one order where partial payment is allowed.
+   - Exact-amount vs partial payment, open orders and over-payment differ per bank: design the handler from `#ngan-hang-ho-tro` and `#thanh-toan-mot-phan` (step 2), and expect several webhooks for one order where partial payment is allowed: add amounts atomically (`integration-design.md` § 3).
    - Order status (`status`, `paid_amount`) is the source of truth; dedupe transactions by `id`.
 4. Paginate list calls; IDs are strings (xid / UUID), not v1 integers.
 5. Sandbox data is simulated and isolated; production needs a production key.

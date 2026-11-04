@@ -18,7 +18,7 @@ The sections below cover plugins known when this file was written; the plugin pa
 3. Configure: bank account, VA (if the bank requires one), payment-code prefix (must match SePay's payment-code settings), success message, order status after payment, display options.
 4. Test with a small order: status moves from On-Hold to Processing once the full amount arrives.
 
-Traps: the site must be reachable from the Internet (no localhost as the webhook URL; while developing locally, `sepay webhook listen` forwards deliveries to the local site, `testing-go-live.md`); after upgrading from 1.0.x read the upgrade section; webhook issues → check the webhook in my.sepay.vn and `debug-webhook.md`.
+Traps: the site must be reachable from the Internet (no localhost as the webhook URL; while developing locally, `sepay webhook listen` forwards deliveries to the local site, `testing-go-live.md`); after a major-version upgrade read the upgrade section; webhook issues → check the webhook in my.sepay.vn and `debug-webhook.md`.
 
 ## HostBill
 

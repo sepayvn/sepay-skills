@@ -25,7 +25,7 @@ They do not mix; each has its own notification channel.
 
 ## Typical combinations
 
-- Shop with QR checkout: webhook + payment code + VietQR image; nightly reconciliation through `GET /v2/transactions`.
+- Shop with QR checkout: webhook + payment code + VietQR image; reconciliation through `GET /v2/transactions` (`since_id`).
 - Strict per-order matching (no memo typos): SePay API v2 order + VA, webhook for realtime, order status as source of truth.
 - Buyers need card or NAPAS VietQR: payment gateway only; IPN updates the order.
 - Accounting after payment: webhook or IPN → issue e-invoice → poll its status.

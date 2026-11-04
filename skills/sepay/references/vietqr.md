@@ -31,9 +31,11 @@ Preview and copy styles at https://qr.sepay.vn. Read `#cau-truc-link-nhung` for 
 ## Best practice and traps
 
 - Generate the URL server side from the order (amount + code) so the buyer cannot edit it; the webhook still re-checks the amount.
-- Make the payment code unique per order and match the prefix configured for payment-code recognition (`/vi/sepay-webhooks/cau-hinh-ma-thanh-toan`).
+- Make the payment code unique per order and fit the whole payment-code structure (prefix, suffix character type and length), not only the prefix: see `webhook.md` § Matching. Put it at the **start** of `des` (after any string the bank requires, e.g. `SEVQR`), followed by a space: the sending and receiving banks may add text along the way and cut the memo, so a code at the end can be lost. Keep `des` short, unaccented letters, digits and spaces only.
 - Show the account number, amount and memo as text too, for buyers who cannot scan; tell them not to change the memo.
-- Poll your own backend (not SePay) for the order status to show "paid" on the page; the webhook updates your backend.
+- The payment page learns "paid" from your own backend, never from SePay's API (it is rate limited per IP): poll it about every 3 s and stop on paid, expired or a hidden tab, or push it from the backend over SSE / WebSocket. The status endpoint returns only status and amount due, no personal data. The webhook updates your backend.
+- When partial payments are allowed (`integration-design.md` § 4a), after a partial transfer show what was received and what is still due, with a QR for the remainder.
+- The QR always comes from the order's current state: a new amount gets a new QR; an expired or cancelled order shows no QR. Money still arriving on an old QR follows the late-payment policy (§ 4a).
 - Full page + backend sample (frontend, 3 endpoints, DB schema, production checklist): `/vi/sepay-webhooks/tao-qr-va-form-thanh-toan`.
 
 ## Docs map

@@ -15,7 +15,7 @@ Look at the facts before guessing: the webhook's **Lịch sử gửi** (delivery
 4. The bank account that received the money is in the webhook's account list.
 5. VA filter: the transaction went to a VA the webhook listens to (or the filter is off).
 6. Payment code: if the webhook requires a code, the memo must contain one matching the configured prefix and length; otherwise SePay skips it (`code` null).
-7. What your server returned: exactly HTTP 200/201 with `{"success": true}` within 30 s. Any other body or status counts as failure.
+7. What your server returned: HTTP 200/201 with `success: true` within 30 s is Thành công; any other body or status is Thất bại. On a payment-verification webhook `{"success": false}` is the right reply for an unmatched / under / duplicate payment (`webhook.md` § Response); only connection failures and (if enabled) non-2xx are retried.
 8. Silent retries: failed deliveries retry for about 33 min (8 attempts); your logs may show late duplicates. Dedupe by `id`.
 9. OAuth-created webhooks: an expired / revoked token breaks auth; reconnect.
 
@@ -25,16 +25,17 @@ Look at the facts before guessing: the webhook's **Lịch sử gửi** (delivery
 |---|---|---|
 | cURL 6 | DNS | domain / DNS record |
 | cURL 7 | connection refused | server down, port, firewall |
-| cURL 28 | timeout > 30 s | reply 200 first, process async |
+| cURL 28 | timeout > 30 s | keep the verdict path to the insert + match + conditional update; move side effects to a worker |
 | cURL 35 / 51 / 60 | TLS / certificate / CA chain | valid cert, full chain (live rejects self-signed) |
 | HTTP 401 | auth mismatch | API key or HMAC secret; HMAC on raw body |
-| HTTP 403 | blocked | allow SePay IPs (`/vi/dia-chi-ip`), WAF rules |
+| HTTP 403 | blocked | compare the firewall / WAF allowlist with the current list at `/vi/dia-chi-ip#danh-sach-dia-chi-ip` (fetch it; IPv6 too) |
 | HTTP 404 / 405 | wrong path / method | exact path (case), accept POST |
 | HTTP 5xx | your server error | your logs |
 
 ## Common causes of "paid but order not updated"
 
-- Handler returns 200 but a different body → SePay retries, your code may throw on duplicates.
+- Handler returns 200 but a different body → the transaction shows Thất bại and is not retried.
+- Handler replies `success: true` to everything → duplicate, unmatched or wrong-amount payments show as Thành công; staff ship them. Fix the whole handler to `webhook.md` § Response, not only the reply line: auth on the raw body, UNIQUE insert by `id` with the stored verdict replayed, match, conditional paid transition, then the verdict.
 - HMAC computed on re-serialized JSON instead of the raw body.
 - Matching by memo text, but the bank altered or truncated it; use `code` / VA instead.
 - Amount check fails (bank-specific exact-amount rules, partial payments).

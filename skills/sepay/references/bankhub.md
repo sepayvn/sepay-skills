@@ -6,19 +6,19 @@ A platform (POS, marketplace, SaaS) serves many merchants and needs each merchan
 
 ## Flow
 
-1. Ask language, environment (default sandbox), local or public server (IPN needs public HTTPS, `testing-go-live.md`).
+1. Ask language, environment (default sandbox), local or public server (IPN needs a public URL, HTTPS recommended, `testing-go-live.md`).
 2. Get an access token: `POST /tokens` with the client credentials (Bearer token for every later call; refresh before expiry).
 3. Create the merchant's company in Bank Hub; it must be **Active** before linking.
 4. Create a link token → Hosted Link URL; open it (redirect or iframe) for the merchant; listen to the iframe `postMessage` events for UI state.
 5. Receive webhook events (`BANK_ACCOUNT_LINKED`, unlink, restore…) to update your records.
-6. Configure the balance-change IPN URL; handle each IPN: check the `Authorization: Apikey <key>` header (and / or SePay IP allowlist), dedupe, reply `{"success": true}` as JSON.
+6. Configure the balance-change IPN URL; handle each IPN: check the `Authorization: Apikey <key>` header (and / or SePay IP allowlist), store by transaction id, reply `{"success": true}` as JSON (`integration-design.md` § 1).
 7. Query transactions / balances through the API when needed (endpoint lookup in `docs-lookup.md`).
 
 ## Best practice and traps
 
 - IPN is sent only when the company is Active and its `transaction_amount` setting is > 0 or Unlimited; a silent IPN usually means one of these.
 - IPN retries only on network failure (Fibonacci, about 33 min, connect timeout 5 s, response wait 8 s): respond fast, process async, dedupe by transaction id.
-- Keep platform credentials and tokens server side; one token per platform, not per merchant browser.
+- Keep platform credentials and tokens server side; one token per platform, not per merchant browser, refreshed under a lock so parallel workers do not race.
 - Webhook events and IPN are different channels: events describe link state, IPN describes money. Handle both.
 - Sandbox has its own base URL, credentials and test accounts; nothing carries over to production.
 

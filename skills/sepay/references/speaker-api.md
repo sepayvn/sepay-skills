@@ -20,7 +20,7 @@ Base URL (production): `https://speaker-api.sepay.vn/devices/v1`; check `/vi/spe
 ## Best practice and traps
 
 - Notify only after you confirmed the payment yourself (webhook with dedupe by transaction `id`); never announce from the client side or from an unverified redirect.
-- Make notify idempotent: one transaction → one announcement, even if your webhook handler runs twice.
+- Make notify idempotent: one transaction → one announcement, even if your webhook handler runs twice. Notify only from the request whose state transition changed the row (`integration-design.md` § 3).
 - Keep the partner secret server side; one cached token for the service, not one per request.
 - OTP pairing needs the merchant present at the device; handle wrong / expired OTP by requesting a new one.
 - Handle device-offline errors without blocking order confirmation: the announcement is a side effect.
