@@ -10,14 +10,13 @@ Money arrives by transfer into the business's own linked bank account and the ap
 2. Payment code: in my.sepay.vn → Công ty → Cấu hình chung, enable payment-code recognition with a prefix (e.g. `DH`) so SePay extracts `code` from the memo. Or use a VA per order (`sepay-api.md`).
 3. Show the buyer a VietQR with amount and memo = the order code (image URL and per-bank rules: `vietqr.md`).
 4. Write the endpoint first: POST, read the **raw body**, verify auth, store the event by `id` (UNIQUE insert-ignore), match the order and run the paid transition in the same request, then reply with the verdict (§ Response below). Slow side effects (email, e-invoice, fulfilment calls) go to a worker (`integration-design.md` § 1).
-5. Create the webhook (dashboard 4-step form, or `sepay webhook create`) with URL and auth (HMAC-SHA256 recommended). For a webhook that confirms orders set:
+5. Create the webhook in my.sepay.vn (4-step form) or with `sepay webhook create`, not from application code, with URL and auth (HMAC-SHA256 recommended). For a webhook that confirms orders set:
    - **Tiền vào**, and only the bank accounts / VAs the shop receives on;
-   - **Dùng để xác thực thanh toán** (CLI `--verify-payment`; `success` becomes the verdict, § Response; it filters nothing) and **Tự động gửi lại khi server trả lỗi** (retry on non-2xx);
+   - **Dùng để xác thực thanh toán** (CLI `--verify-payment`; `success` becomes the verdict, § Response; it filters nothing);
    - leave **Chỉ gửi khi có mã thanh toán** (`--skip-if-no-code`) and **Lọc theo mã thanh toán** (`--prefix-filter DH`) off: not recommended. With them on, a paid transfer whose memo SePay could not extract a code from (memo cut or changed by a bank, buyer typo, characters glued to the code) gets no webhook at all, not even a Thất bại label, and only reconciliation finds it. Turn them on only when the shop asks (e.g. an account shared with another business), and keep reconciliation running;
-   - **Lọc theo mã thanh toán**, when used: read the structures first (`sepay paycode get`, or Công ty → Cấu hình chung → Cấu trúc mã thanh toán) and pass only prefixes of **active** structures, spelled exactly as stored. A prefix that matches no structure means no webhook is ever sent; turning a structure off or renaming its prefix later does the same;
-   - **Bật cảnh báo khi webhook gặp lỗi liên tiếp** with a threshold.
+   - **Lọc theo mã thanh toán**, when used: read the structures first (`sepay paycode get`, or Công ty → Cấu hình chung → Cấu trúc mã thanh toán) and pass only prefixes of **active** structures, spelled exactly as stored. A prefix that matches no structure means no webhook is ever sent; turning a structure off or renaming its prefix later does the same.
 
-   After creating it, check the retry and the alert in my.sepay.vn → Webhooks.
+   After creating it, read it back (`sepay webhook get <id>`: money in, verify-payment on, no code filters, auth). Retry on server errors and the failure alert belong to the monitoring after go-live (`testing-go-live.md` › After go-live).
 6. Test in Test mode with a simulated transaction, then with a real small transfer.
 7. Add reconciliation (`integration-design.md` § 1 Reconciliation): cron every 15–30 min pulls new transactions with `GET /v2/transactions?since_id=`, matches each to an order by code / VA and amount with the same paid transition; it also re-drives events stuck unprocessed. One order on demand: look it up by `q=<order code>`.
 

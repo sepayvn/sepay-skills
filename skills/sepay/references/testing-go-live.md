@@ -15,6 +15,8 @@ Confirm hosts on the product's sandbox page before hardcoding them.
 
 ## Test mode (webhooks, API v2)
 
+With the `sepay` CLI present (`command -v sepay`), set the sandbox up with it instead of clicking through steps 2–4: check what exists (`sepay bank-account list`), then `sepay sandbox init` (bank account, `--with-va`, `--with-webhook-listen` for `sepay webhook listen`, `--seed N`; read `sepay sandbox init --help` first; when not interactive pass every flag or `--yes`). Its `--with-webhook <url>` creates a webhook with no auth and without **Dùng để xác thực thanh toán**: create the webhook that confirms orders with `sepay webhook create` (`webhook.md` step 5). Payment codes: `sepay paycode get` (step 3). Simulate with `sepay sandbox simulate`. Without the CLI, or when a command is missing, use the steps below.
+
 1. Turn on Test mode (SuperAdmin / Admin by default; others need the "Cho phép truy cập Test mode" permission).
 2. Create or copy a bank account, optionally a VA (official VA prefix `SBSEPAY`, or a content VA).
 3. Configure payment-code recognition for Test mode (separate from live).
@@ -34,17 +36,26 @@ Webhooks and IPNs are sent by SePay's servers. While the handler runs on the use
 
 HTTP is accepted in Test mode and on live. An HTTPS URL needs a valid certificate on live (self-signed is rejected); Test mode also accepts self-signed.
 
-## Go-live checklist
+## Go-live
 
-- Production base URL and production credentials (new token / merchant key / client secret), stored as secrets.
-- Webhook / IPN URL: public; HTTPS with a valid certificate recommended (HTTP works, with payload and headers in clear text); auth on (HMAC-SHA256 or API key / secret key); optionally SePay IP allowlist (`/vi/dia-chi-ip`).
-- Handler replies within the time limit; `success: true` only when that transfer paid an order, `false` for unmatched / under / duplicate payments (`webhook.md` § Response); idempotent; state changes are conditional transitions (`integration-design.md` § 3).
-- Raw payload kept in a restricted table; logs mask account numbers and carry no memo, names or secrets (§ 6).
-- An empty secret setting rejects every callback (§ 5).
-- Reconciliation job running (`sepay-api.md`); failure alerts enabled (Telegram / email, `/vi/sepay-webhooks/giam-sat`).
-- Payment-code / VA configuration recreated on live (Test mode settings do not carry over).
-- Rate limits respected; secrets not in the repo or the frontend.
-- One small real transaction end to end before announcing.
+Steps on my.sepay.vn (or with the `sepay` CLI and `--env production`, after confirmation), in order:
+
+1. Link the real bank account that receives the money.
+2. Payment code structure on live matches the shop's order codes (**Công ty → Cấu hình chung → Cấu trúc mã thanh toán**); VA configuration recreated too. Test mode settings do not carry over.
+3. The web is online at a public URL: HTTPS with a valid certificate recommended (HTTP works, with payload and headers in clear text); optionally SePay IP allowlist (`/vi/dia-chi-ip`).
+4. Live webhook created to that URL with the options of `webhook.md` step 5, auth on (HMAC-SHA256 or API key), read back with `sepay webhook get`.
+5. One small real transfer end to end before announcing.
+
+## After go-live: monitoring
+
+- Turn on **Tự động gửi lại khi server trả lỗi** and **Bật cảnh báo khi webhook gặp lỗi liên tiếp** (with a threshold) in my.sepay.vn → Webhooks; the CLI cannot set them. Alert channels: `/vi/sepay-webhooks/giam-sat`.
+- Reconciliation job running (`sepay-api.md`).
+- In the first days, check the webhook's **Lịch sử gửi** and the **Xác thực tự động** label of each transaction for Thất bại (`debug-webhook.md`).
+
+## Code ready for live (developers)
+
+- Production credentials (payment gateway, API token, client secret) stored as secrets, never in the repo or the frontend; rate limits respected.
+- Handler as in `integration-design.md`: `success` verdict (`webhook.md` § Response), idempotent, conditional state transitions (§ 3), empty secret rejects everything (§ 5), raw payload restricted and logs without memo, names or secrets (§ 6).
 
 ## Docs map
 

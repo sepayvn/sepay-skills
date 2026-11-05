@@ -4,15 +4,15 @@ Optional. Every integration works with code + the my.sepay.vn dashboard; the CLI
 
 ## Install
 
-Every channel ships the same signed release build. Pick by what the machine already has; ask the user only when more than one fits (`SKILL.md` Rule 10).
+Every channel ships the same signed release build. Pick by what the machine already has (OS and tools detected as in `SKILL.md` › Tools worth suggesting), in the table's order; ask the user only when more than one fits (`SKILL.md` Rule 10).
 
 | Machine | Install | Upgrade |
 |---|---|---|
-| Node.js (any OS) | `npm install -g sepay-cli` | `npm install -g sepay-cli@latest` |
 | macOS with Homebrew | `brew install sepayvn/sepay-cli/sepay` | `brew upgrade sepay` |
 | Windows with Scoop | `scoop bucket add sepay https://github.com/sepayvn/scoop-sepay-cli` then `scoop install sepay` | `scoop update sepay` |
-| macOS / Linux, no Node | `curl -fsSL https://get.sepay.vn/sepay-cli-install.sh \| sh` | run it again |
+| Node.js (any OS) | `npm install -g sepay-cli` | `npm install -g sepay-cli@latest` |
 | Go | `go install github.com/sepayvn/sepay-cli/cmd/sepay@latest` | run it again |
+| macOS / Linux, none of the above | `curl -fsSL https://get.sepay.vn/sepay-cli-install.sh \| sh` (not Windows) | run it again |
 
 - The install script needs no sudo: it puts `sepay` in `~/.local/bin` (`SEPAY_INSTALL_DIR` changes it, `SEPAY_VERSION=x.y.z` pins a version), checks the archive's SHA-256, and also its cosign signature when `cosign` is on PATH. Tell the user it downloads and runs a script before you run it.
 - npm is the channel that always works. If a Homebrew, Scoop, script or `go install` command fails (tap / bucket not found, 404, unknown module), say so in one line and use npm.
@@ -69,8 +69,9 @@ Confirm with `sepay docs exit-codes` for the installed version.
 
 | Task | Start with |
 |---|---|
+| Set up a sandbox | `sepay sandbox init` (`--with-va`, `--with-webhook-listen`, `--seed N`; when not interactive pass every flag or `--yes`), see `testing-go-live.md` › Test mode |
 | See incoming money | `sepay bank-account list`, `sepay transaction list --json` |
-| Webhook to localhost while developing | `sepay webhook create`, `sepay webhook listen` |
+| Create a webhook that confirms orders: `--event-type in --verify-payment`, no `--skip-if-no-code` / `--prefix-filter` unless asked (`webhook.md` step 5); localhost while developing | `sepay webhook create`, `sepay webhook listen` |
 | Test a handler | `sepay webhook test`; `sepay sandbox simulate payment_in --amount 50000 --bank-account <xid> --code DH123` (xid from `sepay bank-account list --json`) |
 | Per-order matching | `sepay paycode get / set / create`, `sepay va issue` |
 | Hosted checkout order | `sepay pg checkout init` |

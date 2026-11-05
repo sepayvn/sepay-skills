@@ -76,4 +76,5 @@ Every project you create or change ships:
 - `.env.example` (variable names, no values) and a lockfile that pins dependencies: run the package manager so it is generated and commit it (`package-lock.json`, `composer.lock`, `poetry.lock` / pinned `requirements.txt`, `go.sum`, `Gemfile.lock`…); a standard-library-only project says so in the README.
 - Store `referenceCode` and the verdict with every webhook event.
 - README: how to run, configure, and test with the `sepay` CLI.
+- Before saying it is done, remove every temporary dump or print of payloads, headers or signatures added while debugging (`grep -rn` the project for them); they must not ship or be committed.
 - Automated tests: bad signature rejected; empty secret setting rejects everything; the same `id` twice gives one effect; two different transactions for one order in parallel give one fulfilment; an amount the chosen rule does not accept is not marked paid; a SePay webhook replies `success: false` for an unmatched, under- or second payment and repeats the first verdict for a replayed `id`.

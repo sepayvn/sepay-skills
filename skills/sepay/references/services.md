@@ -28,6 +28,6 @@ Pages are under `https://developer.sepay.vn`; append `.md` for markdown. The sit
 
 ## This skill
 
-- Install: `npx skills add sepayvn/sepay-skills` (private repository: needs `gh auth login` + `gh auth setup-git` with read access; Claude Code only: add `-a claude-code`; all projects: `-g`).
+- Install: `npx skills add sepayvn/sepay-skills` (Claude Code only: add `-a claude-code`; Codex: `-a codex`; all projects: `-g`).
 - Update: `npx skills update sepay`. When to suggest it: `SKILL.md` › Tools worth suggesting.
 - Hosted on skills.sh; source of truth for SePay facts stays developer.sepay.vn.

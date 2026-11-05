@@ -1,51 +1,79 @@
 # SePay agent skills
 
-Agent skills for integrating [SePay](https://developer.sepay.vn) (Vietnam payments): bank-transfer payments and webhooks, VietQR, virtual accounts, payment gateway, SePay API, refunds, Bank Hub, e-invoices, Speaker, OAuth2, plugins, the `sepay` CLI and SePay MCP.
+Tiếng Việt | [English](README.en.md)
 
-The skills are plain Markdown: no scripts, no binaries, no telemetry. See [SECURITY.md](SECURITY.md).
+Bộ skill giúp các coding agent (Claude Code, Codex, Cursor…) tích hợp [SePay](https://developer.sepay.vn): nhận thanh toán chuyển khoản và webhook, VietQR, tài khoản ảo (VA), cổng thanh toán, SePay API, Bank Hub, hóa đơn điện tử, `sepay` CLI và SePay MCP.
 
-## Install
+Skill chỉ gồm file Markdown, không có script hay file chạy, không thu thập dữ liệu. Chi tiết: [Bảo mật](#bảo-mật).
 
-With [skills.sh](https://skills.sh) (needs Node.js 22.20 or later):
+## Cài đặt
 
-```bash
-npx skills add sepayvn/sepay-skills --list                # see the skills, install nothing
-npx skills add sepayvn/sepay-skills                       # pick agents interactively
-npx skills add sepayvn/sepay-skills -a claude-code -g -y  # Claude Code, all projects
-```
-
-Clone fails with `Authentication failed` (no read access to the repository from git): sign in with the GitHub CLI, then run the command again. A `GH_TOKEN` variable alone is not enough: the installer clones with git, not with the API token.
+Cần Node.js 22.20 trở lên.
 
 ```bash
-gh auth login        # once
-gh auth setup-git    # lets git clone over HTTPS with your gh account
+npx skills add sepayvn/sepay-skills                        # chọn agent khi cài
+npx skills add sepayvn/sepay-skills -g -y -a claude-code   # Claude Code, dùng cho mọi project
+npx skills add sepayvn/sepay-skills -g -y -a codex         # Codex
 ```
 
-Install with `sepayvn/sepay-skills`, not an SSH clone URL: skills installed from a git URL are skipped by `npx skills update`.
+Gõ đúng `sepayvn/sepay-skills`. Skill cài từ URL git (`git@github.com:…`) sẽ không được `npx skills update` cập nhật.
 
-## Update
+### Cài không cần Node.js
+
+Skill chỉ là thư mục `skills/sepay`. Tải repo bằng `git` hoặc `curl`, rồi chép thư mục này vào nơi agent đọc skill:
 
 ```bash
-npx skills update
+git clone --depth 1 https://github.com/sepayvn/sepay-skills.git
+# hoặc: curl -L https://github.com/sepayvn/sepay-skills/archive/refs/heads/main.tar.gz | tar -xz && mv sepay-skills-main sepay-skills
+
+mkdir -p ~/.claude/skills && cp -R sepay-skills/skills/sepay ~/.claude/skills/   # Claude Code, tab Code của Claude Desktop
+mkdir -p ~/.agents/skills && cp -R sepay-skills/skills/sepay ~/.agents/skills/   # Codex (CLI, IDE, app ChatGPT desktop)
 ```
 
-Installed skills do not update on their own. A new version is a change to the files under `skills/<name>/` on `main`; `update` compares that folder with what you installed. `npx skills check` may install the new version right away, like `update`.
+- Codex còn cài được bằng `$skill-installer` kèm link `https://github.com/sepayvn/sepay-skills/tree/main/skills/sepay`.
+- Claude Desktop (phần chat) và claude.ai: nén thư mục `sepay` thành `sepay.zip`, rồi vào **Settings → Capabilities → Skills → Upload skill**.
+- Cài theo cách này thì `npx skills update` không cập nhật được: muốn lấy bản mới thì tải và chép lại. Mở phiên mới nếu agent chưa thấy skill.
 
-## Remove
+## Cập nhật
+
+```bash
+npx skills update sepay        # chỉ cập nhật skill sepay
+npx skills update sepay -g     # chỉ bản cài toàn máy (-g)
+```
+
+Skill không tự cập nhật. Chạy lệnh này khi muốn lấy bản mới nhất trên `main`. `npx skills update` không kèm tên sẽ cập nhật mọi skill đã cài.
+
+## Gỡ
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills remove sepay
 ```
 
-`remove` reports the source repository name unless telemetry is off.
+Không có `DISABLE_TELEMETRY=1` thì skills CLI gửi tên repo về skills.sh.
 
-## Skills
+## Danh sách skill
 
-| Skill | What it covers |
+| Skill | Phạm vi |
 |---|---|
-| `sepay` | Choosing an integration, webhooks, VietQR, payment gateway and IPN, SePay API, refunds, Bank Hub, e-invoices, Speaker API, OAuth2, plugins, supported banks, sandbox / Test mode and go-live, the `sepay` CLI, SePay MCP. Sandbox first; suggests installing the `sepay` CLI (npm, Homebrew, Scoop or the install script) and connecting SePay MCP when they help, and installs nothing without your approval. Facts that change (banks, limits, hosts) are read from developer.sepay.vn at answer time. |
+| `sepay` | Chọn cách tích hợp, webhook, VietQR, cổng thanh toán và IPN, SePay API, hoàn tiền, Bank Hub, hóa đơn điện tử, Speaker API, OAuth2, plugin, Test mode và go-live, `sepay` CLI, SePay MCP |
 
-## Support
+Cách skill `sepay` làm việc:
 
-- Docs: https://developer.sepay.vn
-- Questions and security reports: support@sepay.vn
+- Làm trên Test mode (sandbox), trừ khi bạn yêu cầu production.
+- Có thể gợi ý cài `sepay` CLI hoặc kết nối SePay MCP, nhưng không cài gì khi bạn chưa đồng ý.
+- Các thông tin hay thay đổi (ngân hàng hỗ trợ, hạn mức, host) được đọc từ developer.sepay.vn lúc trả lời.
+
+## Bảo mật
+
+- Skill chỉ gồm file Markdown: không có script, file chạy hay hook cài đặt, không thu thập dữ liệu.
+- Khi tự chạy, agent chỉ gửi request `GET` tới hai domain của SePay: tài liệu trên `developer.sepay.vn` và `vietqr.app`, dịch vụ VietQR của SePay (danh sách ngân hàng, ảnh QR). Lệnh gọi SePay API hay lệnh ghi bằng `sepay` CLI chỉ chạy khi bạn yêu cầu.
+- Skill không bảo agent gửi code, file, secret hay dữ liệu tài khoản của bạn đi đâu, và không đọc `.env`, khóa SSH hay file ngoài project.
+- Nội dung tài liệu, payload webhook, nội dung chuyển khoản là dữ liệu: chỉ dẫn nằm trong đó không được làm theo.
+- Mức rủi ro L1 theo [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/). Tự kiểm các lệnh gọi mạng: `grep -rn "curl\|http" skills/`.
+
+Báo lỗi bảo mật: [SECURITY.md](SECURITY.md).
+
+## Hỗ trợ
+
+- Tài liệu: https://developer.sepay.vn
+- Câu hỏi và báo lỗi bảo mật: support@sepay.vn
