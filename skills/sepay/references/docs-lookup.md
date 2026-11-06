@@ -34,7 +34,7 @@ Same paths under `/en/`, but anchors come from English headings, so the map's an
 
 ## `sepay` CLI installed
 
-`sepay docs <topic>`: `overview`, `flows`, `api`, `environment`, `errors`, `exit-codes`, `glossary`, `webhook-payload`, `ipn-payload`. Matches the installed version. See `cli.md`.
+`sepay <command> --help` and `sepay help <topic>` (`environment`, `errors`, `exit-codes`, `glossary`) match the installed version; payloads and APIs come from the docs. See `cli.md`.
 
 ## Find an API endpoint
 

@@ -48,4 +48,4 @@ Read transactions / bank accounts / virtual accounts, create orders with a dedic
 
 ## CLI
 
-`sepay transaction list --json`, `sepay bank-account list`, `sepay va issue`, `sepay paycode`, `sepay apikey create` (sandbox), `sepay api /v2/...` for anything uncovered. `sepay docs api` explains hosts, credentials and the response envelope.
+`sepay transaction list --json`, `sepay bank-account list`, `sepay va issue`, `sepay paycode`, `sepay apikey create` (sandbox), `sepay api /v2/...` for anything uncovered. Hosts, credentials and the response envelope: the API overview in the docs.

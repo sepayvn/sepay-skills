@@ -6,7 +6,7 @@ Only when the user needs buyers to pay by card (Visa / Mastercard / JCB) or NAPA
 
 ## Flow
 
-1. Ask the user's language and environment (default sandbox) and whether the server is local (needs a tunnel for IPN, `testing-go-live.md`).
+1. Ask the user's language and environment (default sandbox) and whether the server is local (sandbox IPN then comes through `sepay pg ipn listen`, else a tunnel: `testing-go-live.md` › Callbacks).
 2. Get sandbox `merchant_id` + `secret_key` (my.sepay.vn → Cổng thanh toán). Keep the secret server side.
 3. Create the order server side: build the checkout form fields (`merchant`, `operation=PURCHASE`, `order_amount`, `currency=VND`, `order_invoice_number`, `order_description`, `success_url` / `error_url` / `cancel_url`, optional `payment_method`, `customer_id`), sign them, POST the form to `{checkout host}/v1/checkout/init`. Or use the PHP / Node SDK.
 4. Configure the IPN URL (Cổng thanh toán → Cấu hình → IPN) and auth type.
@@ -49,4 +49,4 @@ Sandbox: API `https://pgapi-sandbox.sepay.vn`, checkout `https://pay-sandbox.sep
 
 ## CLI
 
-`sepay pg checkout init` creates a sandbox order and prints the checkout URL; `sepay pg --help` for the rest; `sepay docs ipn-payload` for the IPN body.
+`sepay pg checkout init` creates a sandbox order and prints the checkout URL; `sepay pg ipn listen --forward localhost:<port>/<path>` brings sandbox IPN to a local handler without a tunnel (`testing-go-live.md` › Callbacks); `sepay pg --help` for the rest; the IPN body from the docs (map below).

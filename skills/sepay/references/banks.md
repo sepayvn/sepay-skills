@@ -1,21 +1,22 @@
 # Supported banks
 
-The list changes; never answer from memory or from this file. Fetch the current table:
+The lists change; never answer from memory or from this file. Each question has its own list; fetch only that section (`?anchor=` returns just the section, as Markdown):
 
-- Vietnamese: https://developer.sepay.vn/vi/sepay-webhooks/tai-khoan-ngan-hang.md
-- English: https://developer.sepay.vn/en/sepay-webhooks/tai-khoan-ngan-hang.md
-
-Read only the section you need (heading "Ngân hàng hỗ trợ", anchor `#ngan-hang-ho-tro`), e.g.
+| Question | Vietnamese | English |
+|---|---|---|
+| Which banks send webhooks (linked accounts, VA, tiền vào / ra) | https://developer.sepay.vn/vi/sepay-webhooks/tai-khoan-ngan-hang.md?anchor=ngan-hang-ho-tro | https://developer.sepay.vn/en/sepay-webhooks/tai-khoan-ngan-hang.md?anchor=supported-banks |
+| VA per order (SePay API v2): banks, exact-amount and multi-payment rules | https://developer.sepay.vn/vi/sepay-api/v2/don-hang/bat-dau-nhanh.md?anchor=ngan-hang-ho-tro | https://developer.sepay.vn/en/sepay-api/v2/don-hang/bat-dau-nhanh.md?anchor=supported-banks |
+| Bank Hub (linking other businesses' accounts) | https://developer.sepay.vn/vi/bankhub/tong-quan.md?anchor=cac-ngan-hang-ho-tro | https://developer.sepay.vn/en/bankhub/tong-quan.md?anchor=supported-banks |
 
 ```bash
-curl -sL https://developer.sepay.vn/vi/sepay-webhooks/tai-khoan-ngan-hang.md | sed -n '/^## Ngân hàng hỗ trợ/,/^## /p'
+curl -sL 'https://developer.sepay.vn/vi/sepay-webhooks/tai-khoan-ngan-hang.md?anchor=ngan-hang-ho-tro'
 ```
 
-With SePay MCP tools: `fetch_content` id `sepay-webhooks/tai-khoan-ngan-hang` (see `docs-lookup.md`).
+Anchors differ by language. A wrong one returns `{"error":"Anchor not found","anchors":[…]}` with the valid list; pick from it. With SePay MCP tools: `fetch_content` id `sepay-webhooks/tai-khoan-ngan-hang` (see `docs-lookup.md`).
 
 ## Reading the table
 
-One row per bank and account type (cá nhân, hộ kinh doanh, doanh nghiệp; VPBank has 4 rows: NEO cá nhân, NEO hộ kinh doanh, NEOBiz hộ kinh doanh, NEOBiz doanh nghiệp). Always ask the user's account type before answering for BIDV, VietinBank or VPBank: the answer differs by type.
+One row per bank and account type (cá nhân, hộ kinh doanh, doanh nghiệp; VPBank has 4 rows: NEO cá nhân, NEO hộ kinh doanh, NEOBiz hộ kinh doanh, NEOBiz doanh nghiệp). Always ask the user's account type before answering for BIDV, VietinBank or VPBank: the answer differs by type. For an account already linked, read it instead of guessing from the type: `sepay bank-account list --json` (or `get`) gives `va_only` (true = money reaches the shop only through a VA) and `official_va_supported`; these fields decide over the table.
 
 | Column | Meaning |
 |---|---|
@@ -30,8 +31,7 @@ One row per bank and account type (cá nhân, hộ kinh doanh, doanh nghiệp; V
 
 ## Other bank lists (different questions)
 
-- VA per order (SePay API v2): `/vi/sepay-api/v2/don-hang/bat-dau-nhanh#ngan-hang-ho-tro`, includes exact-amount and multi-payment rules per bank.
-- Bank Hub (linking other businesses' accounts): `/vi/bankhub/tong-quan#cac-ngan-hang-ho-tro`.
+- VA per order and Bank Hub have their own lists (table above); never answer them from the webhook table.
 - Payment gateway: bank transfer pays into a linked account, so it uses **this** table (same banks, same "chỉ qua VA" rule; `payment-gateway.md`). The list of payment methods (VietQR, NAPAS, cards) is at `/vi/cong-thanh-toan/gioi-thieu#phuong-thuc-thanh-toan-duoc-ho-tro`.
 - VietQR bank codes and per-bank QR rules (VA required, `SEVQR` memo): `vietqr.md`.
 - `https://vietqr.app/banks.json` lists bank codes for building QR images. Its `supported` field means the bank works with the QR image, not that it sends webhooks: never answer "which banks support SePay" from it.

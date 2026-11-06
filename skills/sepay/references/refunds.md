@@ -8,6 +8,18 @@ Three different things; ask which one applies.
 | Card payment through the payment gateway | Gateway transaction void / cancel | `payment-gateway.md`, `/vi/cong-thanh-toan/API/giao-dich/huy-giao-dich` |
 | Bank without refund support | Manual transfer from the bank app, record it yourself | — |
 
+## Built-in limits
+
+SePay enforces these on the server, whatever the caller sends:
+
+- A refund names one collected transaction (by transaction ID, or by VA order, which picks its transaction or requires `transaction_id`). There is no free-form payout.
+- The money goes back to the account that paid; the request has no destination account, only `refund_amount`.
+- Cap: the total refunded for a transaction never exceeds what that transaction collected, `pending` refunds included.
+- Authenticated API token (Bearer) and a required `X-Idempotency-Key`; a resend with the same key returns the same refund.
+- The `sepay` CLI login does not request refund access.
+
+You write and test the refund code (sandbox); a production refund or void is run by the user's app or the user, never by you (`SKILL.md` Security 9).
+
 ## SePay API v2 refund
 
 Only some banks support it, and the list changes: never answer which banks from memory or from this file. Read it at answer time from the first callout of the refund overview (it sits before the first `##`, so the heading filter misses it):

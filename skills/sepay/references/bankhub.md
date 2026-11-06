@@ -35,4 +35,4 @@ A platform (POS, marketplace, SaaS) serves many merchants and needs each merchan
 
 ## CLI
 
-`sepay bankhub --help`: company create / edit (`--status Active`), link-token, `sepay bankhub ipn set <url> --api-key <key> --yes`, `sepay bankhub webhook set <url> --secret <key> --yes`. Order of commands: `sepay docs flows`.
+`sepay bankhub --help`: company create / edit (`--status Active`), link-token, `sepay bankhub ipn set <url> --api-key <key> --yes`, `sepay bankhub webhook set <url> --secret <key> --yes`.

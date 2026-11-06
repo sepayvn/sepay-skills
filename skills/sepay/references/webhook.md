@@ -14,7 +14,7 @@ Money arrives by transfer into the business's own linked bank account and the ap
    - **Tiền vào**, and only the bank accounts / VAs the shop receives on;
    - **Dùng để xác thực thanh toán** (CLI `--verify-payment`; `success` becomes the verdict, § Response; it filters nothing);
    - leave **Chỉ gửi khi có mã thanh toán** (`--skip-if-no-code`) and **Lọc theo mã thanh toán** (`--prefix-filter DH`) off: not recommended. With them on, a paid transfer whose memo SePay could not extract a code from (memo cut or changed by a bank, buyer typo, characters glued to the code) gets no webhook at all, not even a Thất bại label, and only reconciliation finds it. Turn them on only when the shop asks (e.g. an account shared with another business), and keep reconciliation running;
-   - **Lọc theo mã thanh toán**, when used: read the structures first (`sepay paycode get`, or Công ty → Cấu hình chung → Cấu trúc mã thanh toán) and pass only prefixes of **active** structures, spelled exactly as stored. A prefix that matches no structure means no webhook is ever sent; turning a structure off or renaming its prefix later does the same.
+   - **Lọc theo mã thanh toán**, when used: read the structures first (`sepay paycode list`, or Công ty → Cấu hình chung → Cấu trúc mã thanh toán) and pass only prefixes of **active** structures, spelled exactly as stored. A prefix that matches no structure means no webhook is ever sent; turning a structure off or renaming its prefix later does the same.
 
    After creating it, read it back (`sepay webhook get <id>`: money in, verify-payment on, no code filters, auth). Retry on server errors and the failure alert belong to the monitoring after go-live (`testing-go-live.md` › After go-live).
 6. Test in Test mode with a simulated transaction, then with a real small transfer.
@@ -83,4 +83,4 @@ With **Dùng để xác thực thanh toán** on, SePay reads the reply as "this 
 
 ## CLI
 
-`sepay webhook create`, `sepay webhook listen` (forward events to localhost while developing), `sepay webhook test`, `sepay webhook replay <log_xid> --yes`. Details: `sepay webhook --help`, `sepay docs webhook-payload`.
+`sepay webhook create`, `sepay webhook listen` (forward events to localhost while developing), `sepay webhook test`, `sepay webhook replay <transaction-id> --webhook <xid>` (from `sepay webhook logs`). Details: `sepay webhook --help`; payload: Docs map.

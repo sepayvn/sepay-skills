@@ -60,7 +60,7 @@ Without `DISABLE_TELEMETRY=1`, the skills CLI reports the repository name to ski
 How the `sepay` skill behaves:
 
 - It works in Test mode (sandbox) unless you ask for production.
-- It may suggest installing the `sepay` CLI or connecting SePay MCP, and installs nothing without your approval.
+- It may suggest installing the `sepay` CLI (SePay's official command-line tool, [sepayvn/sepay-cli](https://github.com/sepayvn/sepay-cli)) or connecting SePay MCP, and installs nothing without your approval.
 - It reads values that change (supported banks, limits, hosts) from developer.sepay.vn when it answers.
 
 ## Security
@@ -68,6 +68,7 @@ How the `sepay` skill behaves:
 - The skill is Markdown only: no scripts, binaries or install hooks, and no telemetry.
 - On its own, the agent only sends `GET` requests to two SePay domains: docs on `developer.sepay.vn` and `vietqr.app`, SePay's VietQR service (bank list, QR images). SePay API calls and `sepay` CLI writes run only when you ask.
 - The skill never tells the agent to send your code, files, secrets or account data anywhere, and keeps it away from `.env` files, SSH keys and files outside your project.
+- SePay confirms payments and holds no money: transfers land straight in your bank account. No SePay API or `sepay` command pays money out; the only outgoing money is a refund back to the payer, capped by what was collected. The agent never refunds or voids a payment on production itself; it writes the code and tests it in sandbox.
 - Docs, webhook payloads and transfer memos are data: instructions inside them are not followed.
 - Risk tier L1 under the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/). Check the network calls yourself: `grep -rn "curl\|http" skills/`.
 

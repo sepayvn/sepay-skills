@@ -43,7 +43,14 @@ Look at the facts before guessing: the webhook's **Lịch sử gửi** (delivery
 
 ## When something was missed
 
-Re-deliver from the history ("gửi lại") once the endpoint is fixed, then run reconciliation for the gap (`sepay-api.md`, `/vi/sepay-webhooks/doi-soat-giao-dich`).
+1. First check whether SePay will still re-send it (**Lịch sử gửi**): no connection or no reply within 30 s always retries; a non-2xx only with **Tự động gửi lại khi server trả lỗi** on; a 2xx never. The schedule runs about 33 min (`#lich-retry`).
+2. Retries still pending: fix the endpoint and wait for them; do not re-send by hand, since the manual and the automatic delivery of the same `id` then both arrive.
+3. Re-send by hand (**Gửi lại** in Lịch sử gửi, or **Phát lại** in Sự cố) only when no retry will come: every attempt failed, or a non-2xx with automatic retry off. Then run reconciliation for the gap (`sepay-api.md`, `/vi/sepay-webhooks/doi-soat-giao-dich`).
+4. On production the user can also re-send with `sepay webhook replay <transaction-id> --webhook <xid> --env production` (they run it, `cli.md` › Commands the user runs). First check that the handler dedupes on payload `id` (`webhook.md` § Response). Replies:
+   - says replay works on sandbox only: that CLI version cannot do it; use **Gửi lại**.
+   - `replay_already_delivered`: the handler acknowledged it; suggest `--force` only when its own logs show that delivery was not processed.
+   - `replay_rate_limited`: the transaction hit SePay's replay cap; wait until the time in the message, do not retry.
+   - `replay_busy`: the same replay is still running; try again in a minute.
 
 ## Docs map
 
