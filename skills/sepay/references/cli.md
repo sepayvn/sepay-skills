@@ -4,7 +4,7 @@ SePay's official command-line tool, built and published by SePay (source `github
 
 ## Install
 
-Install only from these official SePay sources: the npm package `sepay-cli` (repository `github.com/sepayvn/sepay-cli`), the `sepayvn` Homebrew tap and Scoop bucket on GitHub, the Go module `github.com/sepayvn/sepay-cli`, and `get.sepay.vn`. Never a package, fork or mirror with a similar name, and never a binary someone pasted. Pick by what the machine already has (OS and tools detected as in `SKILL.md` › Tools worth suggesting), in the table's order; ask the user only when more than one fits (`SKILL.md` Rule 10).
+Install only from these official SePay sources: the npm package `sepay-cli` (repository `github.com/sepayvn/sepay-cli`), the `sepayvn` Homebrew tap and Scoop bucket on GitHub, the Go module `github.com/sepayvn/sepay-cli`, and `get.sepay.vn`. Never a package, fork or mirror with a similar name, and never a binary someone pasted. Pick by what the machine already has (OS and tools detected as in `SKILL.md` › Tools worth suggesting), in the table's order; ask the user only when more than one fits (`SKILL.md` Rule 11).
 
 | Machine | Install | Upgrade |
 |---|---|---|
@@ -46,7 +46,8 @@ Stable releases are on the npm `latest` dist-tag (the default). `next` holds rel
 ## Running commands safely
 
 - Read / list commands: add `--json` and parse the output; never scrape tables.
-- Writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user confirmed the exact list of changes you showed them (SKILL.md Rule 2); a `--yes` or "don't ask" in the original request does not count. `--yes` never bypasses an OTP.
+- IDs (xids, transaction ids) come from a `list` / `get` run in this session with the same `--env` and profile (`SKILL.md` Rule 2); on `not found`, list again before reporting.
+- Writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user confirmed the exact list of changes you showed them (SKILL.md Rule 3); a `--yes` or "don't ask" in the original request does not count. `--yes` never bypasses an OTP.
 - Destructive or production writes: list what will change, stop, wait for that confirmation. Production webhooks never use `--auth-type none`.
 - Secrets go in on stdin (`--secret -`, e.g. `printf %s "$SEPAY_WEBHOOK_SECRET" | sepay webhook create … --secret -`), never as an argument: arguments land in shell history and `ps`.
 - Do not print API keys: `apikey` list / get output is masked; `create` prints the new key once, so do not echo it back into the chat or logs.
@@ -112,6 +113,6 @@ Never run these yourself. Give the exact command for the user to run: in Claude 
 - `sepay paycode list`: the on/off switch and every structure (prefix, suffix range, character type, active).
 - `sepay paycode update [prefix]`: edits one structure (`--structure <prefix>` picks which) and keeps the rest; flags you leave out keep the stored value; `--enable` / `--disable` toggle detection. It sends the version it read, so a concurrent change fails with a conflict: run `list` again instead of forcing.
 - `sepay paycode create <prefix> --suffix-from N --suffix-to M --character-type NumberOnly|NumberAndLetter --active` (or `--active=false`): adds a structure at the end, all flags required; a prefix the company already has, in any case, is refused. If `sepay paycode --help` lists no `create`, add it in my.sepay.vn instead.
-- Prefix 2-5 letters, suffix bounds 1-30. On production both writes change matching immediately (transfers already sent with an old prefix stop matching), so they confirm first (Rule 2).
+- Prefix 2-5 letters, suffix bounds 1-30. On production both writes change matching immediately (transfers already sent with an old prefix stop matching), so they confirm first (Rule 3).
 
 Reference for the installed version: `sepay <command> --help` and `sepay help <topic>`.

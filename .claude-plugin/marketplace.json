@@ -1,0 +1,17 @@
+{
+  "name": "sepay",
+  "owner": {
+    "name": "SePay",
+    "email": "support@sepay.vn"
+  },
+  "metadata": {
+    "description": "Plugin chính thức của SePay cho Claude. SePay's official plugins for Claude."
+  },
+  "plugins": [
+    {
+      "name": "sepay",
+      "source": "./",
+      "description": "Tích hợp SePay: xác nhận chuyển khoản qua webhook, VietQR, tài khoản ảo, cổng thanh toán, SePay API, hóa đơn điện tử, sepay CLI, SePay MCP. Integrate SePay, Vietnam's Open Banking infrastructure: webhooks, VietQR, virtual accounts, payment gateway, SePay API, e-invoices, sepay CLI, SePay MCP."
+    }
+  ]
+}

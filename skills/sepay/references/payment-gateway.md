@@ -25,7 +25,7 @@ Sandbox: API `https://pgapi-sandbox.sepay.vn`, checkout `https://pay-sandbox.sep
 - IPN is the source of truth, not the redirect; the buyer may close the tab.
 - Idempotent IPN handler: the same notification can arrive more than once. "Update only if not already paid" must be one conditional `UPDATE … WHERE status = 'pending'` with the affected rows checked, not a read followed by a write; only the request that changed the row fulfils the order.
 - `order_invoice_number` must be unique per order; use your internal order code so IPN maps straight back.
-- IPN URL: a public address, never localhost or a private IP; HTTPS recommended in production, HTTP not blocked (SKILL.md Rule 4).
+- IPN URL: a public address, never localhost or a private IP; HTTPS recommended in production, HTTP not blocked (SKILL.md Rule 5).
 - Recurring card payments are not supported: do not design or promise subscriptions on the gateway.
 - Sandbox data is isolated from production; switching = change hosts + credentials + IPN URL, nothing else.
 - Bank transfer (`payment_method=BANK_TRANSFER`) pays into a bank account the merchant linked in my.sepay.vn, so the banks and account types it works with are the SePay Webhooks supported-banks table: read it via `banks.md` (do not answer from memory). An account marked "chỉ qua VA" there needs a VA chosen in the gateway's bank transfer settings, or the gateway rejects the setup.

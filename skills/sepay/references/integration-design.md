@@ -41,7 +41,7 @@ The webhook `id` (integer) and the SePay API v2 transaction `id` (UUID) are diff
 
 ## 4a. Business policies: ask before coding
 
-These depend on the shop's business, not on SePay. Before writing the payment code, ask them in the same batch as the other choices (`SKILL.md` Rule 10), each with options and the recommended one first. In a non-interactive run, take the recommendation and say so in the reply.
+These depend on the shop's business, not on SePay. Before writing the payment code, ask them in the same batch as the other choices (`SKILL.md` Rule 11), each with options and the recommended one first. In a non-interactive run, take the recommendation and say so in the reply.
 
 **Money after the order is cancelled or expired**
 1. Recommended: store as `unmatched`, reply `success: false`, put it on a refund list for a person; nothing ships.

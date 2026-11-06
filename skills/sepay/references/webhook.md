@@ -6,7 +6,7 @@ Money arrives by transfer into the business's own linked bank account and the ap
 
 ## Flow
 
-1. Ask, in one batch (`SKILL.md` Rule 10): language / framework, whether the server is local or public (local → `sepay webhook listen`, see `testing-go-live.md`), and the business policies of `integration-design.md` § 4a that the request leaves open (which amounts pay an order, money after expiry / cancel). Unattended: take the recommended options and name each one in the reply and the README.
+1. Ask, in one batch (`SKILL.md` Rule 11): language / framework, whether the server is local or public (local → `sepay webhook listen`, see `testing-go-live.md`), and the business policies of `integration-design.md` § 4a that the request leaves open (which amounts pay an order, money after expiry / cancel). Unattended: take the recommended options and name each one in the reply and the README.
 2. Payment code: in my.sepay.vn → Công ty → Cấu hình chung, enable payment-code recognition with a prefix (e.g. `DH`) so SePay extracts `code` from the memo. Or use a VA per order (`sepay-api.md`).
 3. Show the buyer a VietQR with amount and memo = the order code (image URL and per-bank rules: `vietqr.md`).
 4. Write the endpoint first: POST, read the **raw body**, verify auth, store the event by `id` (UNIQUE insert-ignore), match the order and run the paid transition in the same request, then reply with the verdict (§ Response below). Slow side effects (email, e-invoice, fulfilment calls) go to a worker (`integration-design.md` § 1).

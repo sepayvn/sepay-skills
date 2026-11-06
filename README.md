@@ -2,11 +2,37 @@
 
 Tiếng Việt | [English](README.en.md)
 
-Bộ skill giúp các coding agent (Claude Code, Codex, Cursor…) tích hợp [SePay](https://developer.sepay.vn): nhận thanh toán chuyển khoản và webhook, VietQR, tài khoản ảo (VA), cổng thanh toán, SePay API, Bank Hub, hóa đơn điện tử, `sepay` CLI và SePay MCP.
+Bộ skill giúp AI tích hợp [SePay](https://developer.sepay.vn): nhận thanh toán chuyển khoản và webhook, VietQR, tài khoản ảo (VA), cổng thanh toán, SePay API, Bank Hub, hóa đơn điện tử, `sepay` CLI và SePay MCP. Dùng được trên ứng dụng chat (Claude, ChatGPT, Gemini, Grok) lẫn coding agent (Claude Code, Codex, Cursor…).
 
 Skill chỉ gồm file Markdown, không có script hay file chạy, không thu thập dữ liệu. Chi tiết: [Bảo mật](#bảo-mật).
 
 ## Cài đặt
+
+### Tải file về, không cần cài gì
+
+| Tải | Dùng cho |
+|---|---|
+| [**sepay.zip**](https://github.com/sepayvn/sepay-skills/releases/latest/download/sepay.zip) | Ứng dụng có mục Skills (Claude, ChatGPT, Gemini, Grok) và coding agent |
+| [**sepay.md**](https://github.com/sepayvn/sepay-skills/releases/latest/download/sepay.md) | Ứng dụng chat chưa có Skills: cả skill gộp trong một file Markdown |
+
+Hai link trên luôn là bản mới nhất trên `main`. Các bản cũ và mã SHA-256 ở trang [Releases](https://github.com/sepayvn/sepay-skills/releases).
+
+| Bạn dùng | Cách cài |
+|---|---|
+| Claude (claude.ai, Claude Desktop) | **Customize → Skills → Upload skill**, chọn `sepay.zip` (không giải nén), rồi bật skill |
+| ChatGPT Business, Enterprise, Edu | **Skills → Create → Upload from your computer**, chọn `sepay.zip` |
+| ChatGPT Free, Plus, Pro (chưa có Skills) | Đính kèm `sepay.md` vào Project hoặc vào Knowledge của GPT tự tạo, hoặc gửi kèm tin nhắn |
+| Gemini (gemini.google.com, app Mac) | **Skills → Upload**, chọn `sepay.zip` hoặc `sepay.md` |
+| Grok (grok.com) | **Skills → Upload**, chọn `sepay.zip` hoặc `sepay.md` |
+| Claude Code, tab Code của Claude Desktop | Gõ `/plugin install sepay --marketplace sepayvn/sepay-skills` (Claude Code 2.1.275 trở lên), hoặc giải nén `sepay.zip` vào `~/.claude/skills/` (Windows: `%USERPROFILE%\.claude\skills\`) |
+| Codex, Gemini CLI, Grok Build | Giải nén `sepay.zip` vào `~/.agents/skills/` (Windows: `%USERPROFILE%\.agents\skills\`) |
+| Cursor và agent khác đọc `SKILL.md` | Giải nén `sepay.zip` vào thư mục skill của agent đó |
+
+- Giải nén xong phải có `…/skills/sepay/SKILL.md`. Mở phiên mới nếu agent chưa thấy skill.
+- Tên menu là tên tại thời điểm viết, có thể đổi theo phiên bản ứng dụng. ChatGPT chỉ có Skills ở gói doanh nghiệp, giáo dục.
+- Lấy bản mới: tải lại file, xóa skill `sepay` cũ rồi upload hoặc giải nén lại.
+
+### Dùng `npx`
 
 Cần Node.js 22.20 trở lên.
 
@@ -16,23 +42,7 @@ npx skills add sepayvn/sepay-skills -g -y -a claude-code   # Claude Code, dùng 
 npx skills add sepayvn/sepay-skills -g -y -a codex         # Codex
 ```
 
-Gõ đúng `sepayvn/sepay-skills`. Skill cài từ URL git (`git@github.com:…`) sẽ không được `npx skills update` cập nhật.
-
-### Cài không cần Node.js
-
-Skill chỉ là thư mục `skills/sepay`. Tải repo bằng `git` hoặc `curl`, rồi chép thư mục này vào nơi agent đọc skill:
-
-```bash
-git clone --depth 1 https://github.com/sepayvn/sepay-skills.git
-# hoặc: curl -L https://github.com/sepayvn/sepay-skills/archive/refs/heads/main.tar.gz | tar -xz && mv sepay-skills-main sepay-skills
-
-mkdir -p ~/.claude/skills && cp -R sepay-skills/skills/sepay ~/.claude/skills/   # Claude Code, tab Code của Claude Desktop
-mkdir -p ~/.agents/skills && cp -R sepay-skills/skills/sepay ~/.agents/skills/   # Codex (CLI, IDE, app ChatGPT desktop)
-```
-
-- Codex còn cài được bằng `$skill-installer` kèm link `https://github.com/sepayvn/sepay-skills/tree/main/skills/sepay`.
-- Claude Desktop (phần chat) và claude.ai: nén thư mục `sepay` thành `sepay.zip`, rồi vào **Settings → Capabilities → Skills → Upload skill**.
-- Cài theo cách này thì `npx skills update` không cập nhật được: muốn lấy bản mới thì tải và chép lại. Mở phiên mới nếu agent chưa thấy skill.
+Gõ đúng `sepayvn/sepay-skills`. Skill cài từ URL git (`git@github.com:…`) sẽ không được `npx skills update` cập nhật. Codex còn cài được bằng `$skill-installer` kèm link `https://github.com/sepayvn/sepay-skills/tree/main/skills/sepay`.
 
 ## Cập nhật
 
@@ -41,7 +51,7 @@ npx skills update sepay        # chỉ cập nhật skill sepay
 npx skills update sepay -g     # chỉ bản cài toàn máy (-g)
 ```
 
-Skill không tự cập nhật. Chạy lệnh này khi muốn lấy bản mới nhất trên `main`. `npx skills update` không kèm tên sẽ cập nhật mọi skill đã cài.
+Skill không tự cập nhật. Cài bằng file tải về thì tải lại file (xem [Cài đặt](#cài-đặt)). Cài bằng `npx` thì chạy lệnh trên khi muốn lấy bản mới nhất trên `main`. `npx skills update` không kèm tên sẽ cập nhật mọi skill đã cài.
 
 ## Gỡ
 
@@ -65,7 +75,7 @@ Cách skill `sepay` làm việc:
 
 ## Bảo mật
 
-- Skill chỉ gồm file Markdown: không có script, file chạy hay hook cài đặt, không thu thập dữ liệu.
+- Skill chỉ gồm file Markdown: không có script, file chạy hay hook cài đặt, không thu thập dữ liệu. `sepay.zip` và `sepay.md` do GitHub Actions đóng gói từ thư mục `skills/` trên `main` (`scripts/build-zip.sh`, script này không nằm trong file tải về). Đối chiếu mã SHA-256 trên trang Releases nếu cần.
 - Khi tự chạy, agent chỉ gửi request `GET` tới hai domain của SePay: tài liệu trên `developer.sepay.vn` và `vietqr.app`, dịch vụ VietQR của SePay (danh sách ngân hàng, ảnh QR). Lệnh gọi SePay API hay lệnh ghi bằng `sepay` CLI chỉ chạy khi bạn yêu cầu.
 - Skill không bảo agent gửi code, file, secret hay dữ liệu tài khoản của bạn đi đâu, và không đọc `.env`, khóa SSH hay file ngoài project.
 - SePay xác thực thanh toán tự động, không giữ tiền: tiền chuyển khoản vào thẳng tài khoản ngân hàng của bạn. Không có API hay lệnh `sepay` nào chi tiền ra; khoản đi ra duy nhất là hoàn tiền về đúng người đã trả, không vượt số tiền đã thu. Agent không bao giờ tự hoàn tiền hay hủy giao dịch trên production, chỉ viết code và thử trên sandbox.
