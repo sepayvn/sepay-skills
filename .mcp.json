@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sepay": {
+      "type": "http",
+      "url": "https://my.sepay.vn/mcp",
+      "oauth": { "clientId": "sepay-claude-code", "callbackPort": 8765 }
+    }
+  }
+}

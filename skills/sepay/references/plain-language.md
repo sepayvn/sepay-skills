@@ -12,9 +12,11 @@ Default: developer register (concise, technical, no glossary). Switch only on a 
 | describes only the business outcome ("khách chuyển khoản xong đơn tự xác nhận") and cannot answer "ngôn ngữ / framework nào?" | pastes code, a stack trace, logs, a curl command or an API field name |
 | asks what a basic term means (webhook, API key, terminal) | works in an existing codebase (source files, tests, CI, lockfile) or names versions |
 | uses a no-code / hosted platform (WordPress / WooCommerce, Haravan, Sapo, a site builder) and asks you to "làm hết giúp" | asks about design trade-offs: concurrency, retries, idempotency, schema |
+| writes from a chat app with no terminal (`SKILL.md` › No terminal) or from an empty project, shares no code, and asks only for the outcome ("làm cho web tôi tự xác nhận chuyển khoản") | does the same but names their stack or hosting ("Laravel trên VPS", "Next.js trên Vercel") |
+| answers "Chọn giúp tôi" to the stack question (`SKILL.md` Rule 11) | |
 
 - Not signs either way: casual or unaccented writing, typos, short messages, building with an AI agent, Vietnamese vs English.
-- Mixed or unclear: stay concise and technical, and explain a term only when asked. Do not ask the user how technical they are.
+- Mixed or unclear: stay concise and technical, and explain a term only when asked. Do not ask the user how technical they are; the first stack question carries the "Chọn giúp tôi" option instead (Rule 11).
 - One explanation request from a developer is a lookup, not a switch: answer it and stay technical.
 - Once you switch, keep it for the session unless the user starts using technical terms; then switch back at once and stop explaining.
 

@@ -1,7 +1,7 @@
 {
   "name": "sepay",
   "displayName": "SePay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SePay là hạ tầng Open Banking tại Việt Nam, tự động xác nhận thanh toán chuyển khoản. Plugin giúp Claude tích hợp SePay: xác nhận thanh toán qua webhook, VietQR, tài khoản ảo (VA), cổng thanh toán (VietQR, NAPAS, thẻ quốc tế) và IPN, SePay API, đối soát và hoàn tiền, Bank Hub, hóa đơn điện tử, loa thanh toán, OAuth2, plugin, sepay CLI và SePay MCP. Chỉ gồm hướng dẫn Markdown, không có script, không thu thập dữ liệu. SePay is Vietnam's Open Banking infrastructure for automatic bank-transfer payment confirmation. This plugin teaches Claude to integrate SePay: webhooks, VietQR, virtual accounts, the payment gateway and IPN, the SePay API, refunds, Bank Hub, e-invoices, the sepay CLI and SePay MCP. Markdown only: no scripts, no data collection.",
   "author": {
     "name": "SePay",

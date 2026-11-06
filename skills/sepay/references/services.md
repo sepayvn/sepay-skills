@@ -29,5 +29,5 @@ Pages are under `https://developer.sepay.vn`; append `.md` for markdown. The sit
 ## This skill
 
 - Install: `npx skills add sepayvn/sepay-skills` (Claude Code only: add `-a claude-code`; Codex: `-a codex`; all projects: `-g`).
-- Update: `npx skills update sepay`. When to suggest it: `SKILL.md` › Tools worth suggesting.
+- Update: Claude Code plugin `claude plugin update sepay`; `npx` install `npx skills update sepay`; uploaded or unzipped file: download `sepay.zip` again. When to suggest it: `SKILL.md` › Tools worth suggesting.
 - Hosted on skills.sh; source of truth for SePay facts stays developer.sepay.vn.

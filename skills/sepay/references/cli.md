@@ -9,7 +9,7 @@ Install only from these official SePay sources: the npm package `sepay-cli` (rep
 | Machine | Install | Upgrade |
 |---|---|---|
 | macOS with Homebrew | `brew install sepayvn/sepay-cli/sepay` | `brew upgrade sepay` |
-| Windows with Scoop | `scoop bucket add sepay https://github.com/sepayvn/scoop-sepay-cli` then `scoop install sepay` | `scoop update sepay` |
+| Windows with Scoop | `scoop bucket add sepay https://github.com/sepayvn/scoop-sepay-cli` then `scoop install sepay/sepay` | `scoop update sepay` |
 | Node.js (any OS) | `npm install -g sepay-cli` | `npm install -g sepay-cli@latest` |
 | Go | `go install github.com/sepayvn/sepay-cli/cmd/sepay@latest` | run it again |
 | macOS / Linux, none of the above | `curl -fsSLO https://get.sepay.vn/sepay-cli-install.sh` then `sh sepay-cli-install.sh` (not Windows) | run it again |

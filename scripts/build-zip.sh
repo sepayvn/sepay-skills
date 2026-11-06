@@ -10,10 +10,15 @@
 #                      without a Skills feature (attach to a project / custom GPT) and for
 #                      single-file uploads (Gemini, Grok).
 #   dist/SHA256SUMS  - checksums of the files above.
+#   dist/VERSION     - the release version (semver), read from .claude-plugin/plugin.json.
+#
+# The version lives in .claude-plugin/plugin.json `version` (X.Y.Z) and every SKILL.md repeats it
+# as `metadata.version`, so a downloaded zip or one-file .md can tell which release it is.
+# The build fails when the two disagree or the version is not X.Y.Z.
 #
 # The zip is reproducible: same skill content and same last commit time give the same bytes.
 # Usage: scripts/build-zip.sh            (run from anywhere inside the repo)
-# Needs: bash, git, zip, unzip, sha256sum, awk.
+# Needs: bash, git, zip, unzip, sha256sum, awk, jq.
 set -euo pipefail
 
 export LC_ALL=C.UTF-8 TZ=UTC
@@ -37,6 +42,17 @@ frontmatter_field() {
   ' "$1"
 }
 
+# Read metadata.version from a SKILL.md frontmatter block (quotes stripped).
+skill_version() {
+  awk '
+    NR == 1 && $0 != "---" { exit }
+    NR > 1 && $0 == "---"  { exit }
+    /^metadata:/ { m = 1; next }
+    m && /^[^ ]/ { m = 0 }
+    m && /^  version: / { v = substr($0, 12); gsub(/["\047]/, "", v); print v; exit }
+  ' "$1"
+}
+
 validate_skill() {
   local dir="$1" name skill_md fm_name desc desc_len bad
   name="$(basename "$dir")"
@@ -57,6 +73,11 @@ validate_skill() {
   # Skills here are Markdown only; hidden files (.DS_Store) break Gemini uploads.
   bad="$(cd "$dir" && find . \( -name '.*' ! -name . \) -o \( -type f ! -name '*.md' \) | sort)"
   [[ -z "$bad" ]] || fail "$name: only visible .md files are allowed, found: $(echo "$bad" | tr '\n' ' ')"
+
+  local sv
+  sv="$(skill_version "$skill_md")"
+  [[ "$sv" == "$version" ]] \
+    || fail "$name: SKILL.md metadata.version is '${sv:-missing}', .claude-plugin/plugin.json version is $version; keep them equal"
 
   # Every reference SKILL.md names must exist, or the one-file build points nowhere.
   local ref
@@ -90,7 +111,7 @@ build_single_md() {
     # Frontmatter first, so the file still loads as a single-file skill.
     awk 'NR == 1 || !done { print } NR > 1 && $0 == "---" { done = 1 }' "$dir/SKILL.md"
     echo
-    echo "> One-file edition of the \`$name\` skill: each file of \`references/\` follows below under a heading \`# references/<file>\`. When the instructions say to read a file, read that section."
+    echo "> One-file edition of the \`$name\` skill, version $version: each file of \`references/\` follows below under a heading \`# references/<file>\`. When the instructions say to read a file, read that section."
     awk 'NR > 1 && $0 == "---" && !done { done = 1; next } done { print }' "$dir/SKILL.md"
     if [[ -d "$dir/references" ]]; then
       for ref in $(cd "$dir/references" && ls -1 *.md | sort); do
@@ -102,6 +123,12 @@ build_single_md() {
 }
 
 [[ -d "$skills_dir" ]] || fail "skills/ not found at $skills_dir"
+
+plugin_json="$root/.claude-plugin/plugin.json"
+[[ -f "$plugin_json" ]] || fail ".claude-plugin/plugin.json not found"
+version="$(jq -r '.version // empty' "$plugin_json")"
+[[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] \
+  || fail ".claude-plugin/plugin.json version '${version}' is not semver X.Y.Z"
 
 # Last commit time of skills/, so a rebuild of the same commit gives the same zip.
 epoch="${SOURCE_DATE_EPOCH:-$(git -C "$root" log -1 --format=%ct -- skills 2>/dev/null || true)}"
@@ -123,4 +150,6 @@ done
 (( count > 0 )) || fail "no skill folders in skills/"
 
 (cd "$dist" && sha256sum -- *.zip *.md > SHA256SUMS)
+echo "$version" > "$dist/VERSION"
+echo "version: $version"
 cat "$dist/SHA256SUMS"

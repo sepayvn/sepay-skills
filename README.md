@@ -4,7 +4,7 @@ Tiếng Việt | [English](README.en.md)
 
 Bộ skill giúp AI tích hợp [SePay](https://developer.sepay.vn): nhận thanh toán chuyển khoản và webhook, VietQR, tài khoản ảo (VA), cổng thanh toán, SePay API, Bank Hub, hóa đơn điện tử, `sepay` CLI và SePay MCP. Dùng được trên ứng dụng chat (Claude, ChatGPT, Gemini, Grok) lẫn coding agent (Claude Code, Codex, Cursor…).
 
-Skill chỉ gồm file Markdown, không có script hay file chạy, không thu thập dữ liệu. Chi tiết: [Bảo mật](#bảo-mật).
+Skill chỉ gồm file Markdown, không có script hay file chạy, không thu thập dữ liệu. Chi tiết: [Bảo mật](#bảo-mật). Phiên bản và thay đổi: [CHANGELOG.md](CHANGELOG.md).
 
 ## Cài đặt
 
@@ -15,7 +15,7 @@ Skill chỉ gồm file Markdown, không có script hay file chạy, không thu t
 | [**sepay.zip**](https://github.com/sepayvn/sepay-skills/releases/latest/download/sepay.zip) | Ứng dụng có mục Skills (Claude, ChatGPT, Gemini, Grok) và coding agent |
 | [**sepay.md**](https://github.com/sepayvn/sepay-skills/releases/latest/download/sepay.md) | Ứng dụng chat chưa có Skills: cả skill gộp trong một file Markdown |
 
-Hai link trên luôn là bản mới nhất trên `main`. Các bản cũ và mã SHA-256 ở trang [Releases](https://github.com/sepayvn/sepay-skills/releases).
+Hai link trên luôn là bản phát hành mới nhất. Mỗi bản có tag `v<phiên bản>` (semver), kèm mã SHA-256, ở trang [Releases](https://github.com/sepayvn/sepay-skills/releases).
 
 | Bạn dùng | Cách cài |
 |---|---|
@@ -24,7 +24,7 @@ Hai link trên luôn là bản mới nhất trên `main`. Các bản cũ và mã
 | ChatGPT Free, Plus, Pro (chưa có Skills) | Đính kèm `sepay.md` vào Project hoặc vào Knowledge của GPT tự tạo, hoặc gửi kèm tin nhắn |
 | Gemini (gemini.google.com, app Mac) | **Skills → Upload**, chọn `sepay.zip` hoặc `sepay.md` |
 | Grok (grok.com) | **Skills → Upload**, chọn `sepay.zip` hoặc `sepay.md` |
-| Claude Code, tab Code của Claude Desktop | Gõ `/plugin install sepay --marketplace sepayvn/sepay-skills` (Claude Code 2.1.275 trở lên), hoặc giải nén `sepay.zip` vào `~/.claude/skills/` (Windows: `%USERPROFILE%\.claude\skills\`) |
+| Claude Code, tab Code của Claude Desktop | Gõ `/plugin install sepay --marketplace sepayvn/sepay-skills` (Claude Code 2.1.275 trở lên; plugin cài kèm SePay MCP, chỉ còn đăng nhập trong `/mcp`), hoặc giải nén `sepay.zip` vào `~/.claude/skills/` (Windows: `%USERPROFILE%\.claude\skills\`) |
 | Codex, Gemini CLI, Grok Build | Giải nén `sepay.zip` vào `~/.agents/skills/` (Windows: `%USERPROFILE%\.agents\skills\`) |
 | Cursor và agent khác đọc `SKILL.md` | Giải nén `sepay.zip` vào thư mục skill của agent đó |
 
@@ -59,7 +59,7 @@ Skill không tự cập nhật. Cài bằng file tải về thì tải lại fil
 DISABLE_TELEMETRY=1 npx skills remove sepay
 ```
 
-Không có `DISABLE_TELEMETRY=1` thì skills CLI gửi tên repo về skills.sh.
+`npx skills` là công cụ bên ngoài (skills.sh): khi `add`, `update`, `remove` nó gửi tên repo và skill về skills.sh. Không muốn gửi thì thêm `DISABLE_TELEMETRY=1` trước lệnh, như lệnh gỡ ở trên. Bản thân skill không gửi gì.
 
 ## Danh sách skill
 
@@ -75,7 +75,7 @@ Cách skill `sepay` làm việc:
 
 ## Bảo mật
 
-- Skill chỉ gồm file Markdown: không có script, file chạy hay hook cài đặt, không thu thập dữ liệu. `sepay.zip` và `sepay.md` do GitHub Actions đóng gói từ thư mục `skills/` trên `main` (`scripts/build-zip.sh`, script này không nằm trong file tải về). Đối chiếu mã SHA-256 trên trang Releases nếu cần.
+- Skill chỉ gồm file Markdown: không có script, file chạy hay hook cài đặt, không thu thập dữ liệu (công cụ `npx skills` bên ngoài thì có, xem [Gỡ](#gỡ)). Plugin Claude Code thêm cấu hình SePay MCP (`.mcp.json`): chỉ là địa chỉ `https://my.sepay.vn/mcp`, chưa đăng nhập thì không đọc được gì. `sepay.zip` và `sepay.md` do GitHub Actions đóng gói từ thư mục `skills/` trên `main` (`scripts/build-zip.sh`, script này không nằm trong file tải về). Đối chiếu mã SHA-256 trên trang Releases nếu cần.
 - Khi tự chạy, agent chỉ gửi request `GET` tới hai domain của SePay: tài liệu trên `developer.sepay.vn` và `vietqr.app`, dịch vụ VietQR của SePay (danh sách ngân hàng, ảnh QR). Lệnh gọi SePay API hay lệnh ghi bằng `sepay` CLI chỉ chạy khi bạn yêu cầu.
 - Skill không bảo agent gửi code, file, secret hay dữ liệu tài khoản của bạn đi đâu, và không đọc `.env`, khóa SSH hay file ngoài project.
 - SePay xác thực thanh toán tự động, không giữ tiền: tiền chuyển khoản vào thẳng tài khoản ngân hàng của bạn. Không có API hay lệnh `sepay` nào chi tiền ra; khoản đi ra duy nhất là hoàn tiền về đúng người đã trả, không vượt số tiền đã thu. Agent không bao giờ tự hoàn tiền hay hủy giao dịch trên production, chỉ viết code và thử trên sandbox.

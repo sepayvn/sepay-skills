@@ -1,6 +1,7 @@
 # Builds the downloadable skill files (dist/*.zip, dist/*.md) with scripts/build-zip.sh.
 # - pull_request: validate and build only; the files are attached to the run as an artifact.
-# - push to main: also publish them as a GitHub Release marked latest, so
+# - push to main: also publish them as GitHub Release v<version> (semver from
+#   .claude-plugin/plugin.json) marked latest, so
 #   https://github.com/sepayvn/sepay-skills/releases/latest/download/sepay.zip
 #   always serves the skill as it is on main (the same version `npx skills update` installs).
 name: Build skill downloads
@@ -52,8 +53,8 @@ jobs:
           fi
           old="$(git show "$BASE:.claude-plugin/plugin.json" 2>/dev/null | jq -r '.version // empty' || true)"
           new="$(jq -r '.version' .claude-plugin/plugin.json)"
-          if [ -n "$old" ] && [ "$old" = "$new" ]; then
-            echo "::error file=.claude-plugin/plugin.json::skills/ changed but version is still $new. Raise it (e.g. patch for wording, minor for new coverage)."
+          if [ -n "$old" ] && [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -n1)" != "$new" -o "$old" = "$new" ]; then
+            echo "::error file=.claude-plugin/plugin.json::skills/ changed but version $new is not above $old. Raise it (patch for wording, minor for new coverage) in plugin.json and SKILL.md metadata.version, and add a CHANGELOG.md entry."
             exit 1
           fi
           echo "version: ${old:-none} -> $new"
@@ -86,13 +87,24 @@ jobs:
         run: |
           set -euo pipefail
           sha="$(git rev-parse --short=7 HEAD)"
-          tag="v$(date -u +%Y.%m.%d)-${sha}"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Release $tag already exists, nothing to do."
-            exit 0
+          version="$(cat dist/VERSION)"
+          tag="v${version}"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            if [ "$(git rev-list -n 1 "$tag")" = "$(git rev-parse HEAD)" ]; then
+              echo "Release $tag already points at this commit, nothing to do."; exit 0
+            fi
+            # A push that only touches the build script, this workflow or plugin metadata ships
+            # the same skill files, so the existing release stays as it is.
+            if git diff --quiet "$tag" HEAD -- skills; then
+              echo "skills/ unchanged since $tag, nothing new to release."; exit 0
+            fi
+            echo "::error file=.claude-plugin/plugin.json::skills/ changed since $tag but the version is still ${version}. Raise it in .claude-plugin/plugin.json and SKILL.md metadata.version."
+            exit 1
           fi
           {
-            echo "Skill \`sepay\` from commit ${sha}: $(git log -1 --format=%s)"
+            echo "Skill \`sepay\` ${version} (commit ${sha}): $(git log -1 --format=%s)"
+            echo
+            echo "Changes: https://github.com/${GITHUB_REPOSITORY}/blob/${tag}/CHANGELOG.md"
             echo
             echo "- \`sepay.zip\`: upload to Claude (Customize → Skills), ChatGPT, Gemini or Grok, or unzip into \`~/.claude/skills/\` / \`~/.agents/skills/\`."
             echo "- \`sepay.md\`: the whole skill in one file, for chats without a Skills feature."
