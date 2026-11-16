@@ -40,7 +40,7 @@ HTTP is accepted in Test mode and on live. An HTTPS URL needs a valid certificat
 
 ## Go-live
 
-Steps on my.sepay.vn (or with the `sepay` CLI and `--env production`, after confirmation), in order:
+Steps on my.sepay.vn (or with the `sepay` CLI, where each `--env production` write is the user's to run, Rule 3), in order:
 
 1. Link the real bank account that receives the money.
 2. Payment code structure on live matches the shop's order codes (**Công ty → Cấu hình chung → Cấu trúc mã thanh toán**); VA configuration recreated too. Test mode settings do not carry over.
@@ -48,6 +48,7 @@ Steps on my.sepay.vn (or with the `sepay` CLI and `--env production`, after conf
 4. Before creating it, list the live webhooks (`sepay webhook list --env production`) and tell the user which already receive the same bank account (all accounts, or that one), since each of them also gets the shop's transactions; changing or deleting any is the user's call. Then create the live webhook to that URL with the options of `webhook.md` step 5, auth on (HMAC-SHA256 or API key), read back with `sepay webhook get`.
 5. Code that calls the SePay API on live (reconciliation, VA orders, refunds) needs a production API key: the user creates it in my.sepay.vn → **Cài đặt công ty → API Keys** and puts it in the server's environment; `sepay apikey create` makes sandbox keys only.
 6. One small real transfer end to end before announcing.
+7. Monitoring on: § After go-live (retry on server errors, the failure alert).
 
 ## After go-live: monitoring
 

@@ -83,4 +83,4 @@ With **Dùng để xác thực thanh toán** on, SePay reads the reply as "this 
 
 ## CLI
 
-`sepay webhook create`, `sepay webhook listen` (forward events to localhost while developing), `sepay webhook test`, `sepay webhook replay <transaction-id> --webhook <xid>` (from `sepay webhook logs`). Details: `sepay webhook --help`; payload: Docs map.
+`sepay webhook create`, `sepay webhook listen` (forward events to localhost while developing), `sepay webhook test`, `sepay webhook replay <transaction-id> --webhook <xid>` (from `sepay webhook logs`). Details: `sepay webhook --help`; payload: Docs map. Changing, deleting or re-creating a live webhook, or changing payment codes on live: `cli.md` › Changing a live webhook or payment code.

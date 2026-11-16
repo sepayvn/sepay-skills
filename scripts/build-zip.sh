@@ -9,12 +9,20 @@
 #   dist/<name>.md   - SKILL.md plus every references/*.md in one Markdown file, for chats
 #                      without a Skills feature (attach to a project / custom GPT) and for
 #                      single-file uploads (Gemini, Grok).
+#   dist/<plugin>-claude-plugin.zip - the Claude plugin (Claude only): .claude-plugin/plugin.json (+ icon), skills/, the
+#                      READMEs and LICENSE at the zip root, for uploading as a plugin in claude.ai /
+#                      Claude Desktop, so the plugin carries the SePay MCP connector and the skills
+#                      together. The MCP servers of the repo's .mcp.json are declared inline in the
+#                      zip's plugin.json (`mcpServers`; the zip has no .mcp.json, one source only),
+#                      with the OAuth client registered for claude.ai / Claude Desktop
+#                      (CLAUDE_AI_CLIENT_ID, no localhost callback port). The repo's .mcp.json keeps
+#                      the Claude Code client, used by /plugin install from the marketplace.
 #   dist/SHA256SUMS  - checksums of the files above.
 #   dist/VERSION     - the release version (semver), read from .claude-plugin/plugin.json.
 #
 # The version lives in .claude-plugin/plugin.json `version` (X.Y.Z) and every SKILL.md repeats it
 # as `metadata.version`, so a downloaded zip or one-file .md can tell which release it is.
-# The build fails when the two disagree or the version is not X.Y.Z.
+# The build fails when any of them disagree or the version is not X.Y.Z.
 #
 # The zip is reproducible: same skill content and same last commit time give the same bytes.
 # Usage: scripts/build-zip.sh            (run from anywhere inside the repo)
@@ -105,6 +113,40 @@ build_zip() {
   fi
 }
 
+build_plugin_zip() {
+  local epoch="$1" stage out="$dist/$plugin_name-claude-plugin.zip" f
+  stage="$(mktemp -d)"
+  mkdir -p "$stage/.claude-plugin"
+  # The manifest and its icon; marketplace.json lists the plugin for a marketplace and is not part of it.
+  for f in "$root"/.claude-plugin/*; do
+    [[ "$(basename "$f")" == marketplace.json ]] || cp "$f" "$stage/.claude-plugin/"
+  done
+  # The servers of the repo's .mcp.json, inline in plugin.json, with the claude.ai OAuth client
+  # (sign-in required) instead of the Claude Code one.
+  if [[ -f "$root/.mcp.json" ]]; then
+    jq --arg id "$CLAUDE_AI_CLIENT_ID" --slurpfile mcp "$root/.mcp.json" \
+      '.mcpServers = ($mcp[0].mcpServers | with_entries(if .value.oauth then .value.oauth = {clientId: $id} else . end))' \
+      "$root/.claude-plugin/plugin.json" > "$stage/.claude-plugin/plugin.json" \
+      || fail "plugin.json: cannot add the MCP servers for claude.ai"
+    jq -e --arg id "$CLAUDE_AI_CLIENT_ID" \
+      '(.mcpServers | length) > 0 and ([.mcpServers[] | select(.oauth) | .oauth.clientId == $id] | all)' \
+      "$stage/.claude-plugin/plugin.json" >/dev/null || fail "plugin.json: MCP servers missing or OAuth client is not $CLAUDE_AI_CLIENT_ID"
+  fi
+  # The plugin directory refuses a plugin without a README; the English one is linked from it.
+  for f in LICENSE README.md README.en.md; do cp "$root/$f" "$stage/$f"; done
+  cp -R "$skills_dir" "$stage/skills"
+  find "$stage" -type d -exec chmod 755 {} +
+  find "$stage" -type f -exec chmod 644 {} +
+  find "$stage" -exec touch -h -d "@$epoch" {} +
+  (cd "$stage" && find . -mindepth 1 | sed 's|^\./||' | sort | zip -q -X -@ "$out")
+  rm -rf "$stage"
+
+  # Claude needs the manifest at the zip root, not inside a folder.
+  unzip -Z1 "$out" | grep -qx ".claude-plugin/plugin.json" || fail "$(basename "$out"): .claude-plugin/plugin.json missing at the root"
+  unzip -Z1 "$out" | grep -q "^skills/[^/]*/SKILL.md$" || fail "$(basename "$out"): no skills/<name>/SKILL.md"
+  echo "built: dist/$(basename "$out") ($(unzip -Z1 "$out" | wc -l | tr -d ' ') entries)"
+}
+
 build_single_md() {
   local name="$1" dir="$skills_dir/$1" out="$dist/$1.md" ref
   {
@@ -127,8 +169,16 @@ build_single_md() {
 plugin_json="$root/.claude-plugin/plugin.json"
 [[ -f "$plugin_json" ]] || fail ".claude-plugin/plugin.json not found"
 version="$(jq -r '.version // empty' "$plugin_json")"
+plugin_name="$(jq -r '.name // empty' "$plugin_json")"
+[[ -n "$plugin_name" ]] || fail ".claude-plugin/plugin.json has no name"
+# Claude rejects a plugin upload whose description is longer than 500 characters.
+desc_len="$(jq -r '.description // ""' "$plugin_json" | tr -d '\n' | wc -m | tr -d ' ')"
+(( desc_len <= 500 )) || fail ".claude-plugin/plugin.json description is $desc_len characters; Claude allows at most 500"
 [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] \
   || fail ".claude-plugin/plugin.json version '${version}' is not semver X.Y.Z"
+
+# OAuth client id of the SePay MCP server for claude.ai / Claude Desktop (public identifier, not a secret).
+CLAUDE_AI_CLIENT_ID="sepay-claude"
 
 # Last commit time of skills/, so a rebuild of the same commit gives the same zip.
 epoch="${SOURCE_DATE_EPOCH:-$(git -C "$root" log -1 --format=%ct -- skills 2>/dev/null || true)}"
@@ -148,6 +198,7 @@ for dir in "$skills_dir"/*/; do
   echo "built: dist/$name.zip ($(unzip -Z1 "$dist/$name.zip" | wc -l | tr -d ' ') entries), dist/$name.md"
 done
 (( count > 0 )) || fail "no skill folders in skills/"
+build_plugin_zip "$epoch"
 
 (cd "$dist" && sha256sum -- *.zip *.md > SHA256SUMS)
 echo "$version" > "$dist/VERSION"

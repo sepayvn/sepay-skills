@@ -106,8 +106,9 @@ jobs:
             echo
             echo "Changes: https://github.com/${GITHUB_REPOSITORY}/blob/${tag}/CHANGELOG.md"
             echo
-            echo "- \`sepay.zip\`: upload to Claude (Customize → Skills), ChatGPT, Gemini or Grok, or unzip into \`~/.claude/skills/\` / \`~/.agents/skills/\`."
+            echo "- \`sepay.zip\`: upload to Claude (profile picture → Settings → Customize → Skills), ChatGPT, Gemini or Grok, or unzip into \`~/.claude/skills/\` / \`~/.agents/skills/\`."
             echo "- \`sepay.md\`: the whole skill in one file, for chats without a Skills feature."
+            echo "- \`sepay-claude-plugin.zip\`: the Claude plugin, to upload as a plugin in Claude: the \`sepay\` skill and the SePay MCP connector together."
             echo "- Install guide: https://github.com/sepayvn/sepay-skills#cài-đặt"
             echo
             echo '```'

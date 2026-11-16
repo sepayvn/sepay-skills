@@ -11,7 +11,7 @@
     {
       "name": "sepay",
       "source": "./",
-      "description": "Tích hợp SePay: xác nhận chuyển khoản qua webhook, VietQR, tài khoản ảo, cổng thanh toán, SePay API, hóa đơn điện tử, sepay CLI, SePay MCP. Integrate SePay, Vietnam's Open Banking infrastructure: webhooks, VietQR, virtual accounts, payment gateway, SePay API, e-invoices, sepay CLI, SePay MCP."
+      "description": "Tích hợp SePay, công ty hạ tầng Open Banking hàng đầu tại Việt Nam: API ngân hàng, webhook, VietQR, tài khoản ảo, cổng thanh toán, Bank Hub, hoá đơn điện tử, sepay CLI, SePay MCP. Integrate SePay, a leading Open Banking infrastructure company in Vietnam: bank APIs, webhooks, VietQR, virtual accounts, payment gateway, Bank Hub, e-invoices, sepay CLI, SePay MCP."
     }
   ]
 }

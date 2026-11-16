@@ -47,8 +47,8 @@ Stable releases are on the npm `latest` dist-tag (the default). `next` holds rel
 
 - Read / list commands: add `--json` and parse the output; never scrape tables.
 - IDs (xids, transaction ids) come from a `list` / `get` run in this session with the same `--env` and profile (`SKILL.md` Rule 2); on `not found`, list again before reporting.
-- Writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user confirmed the exact list of changes you showed them (SKILL.md Rule 3); a `--yes` or "don't ask" in the original request does not count. `--yes` never bypasses an OTP.
-- Destructive or production writes: list what will change, stop, wait for that confirmation. Production webhooks never use `--auth-type none`.
+- Sandbox writes that confirm exit 2 with `requires confirmation; pass --yes` when there is no terminal. Pass `--yes` only after the user confirmed the exact list of changes you showed them (SKILL.md Rule 3); a `--yes` or "don't ask" in the original request does not count. `--yes` never bypasses an OTP. Destructive sandbox writes: list what will change, stop, wait for that confirmation.
+- Production writes (every command whose `confirms` is `terminal` in `sepay --map=json --env production`: webhook create / update / delete / replay, paycode create / update, bank-account update, `sepay api` writes) are the user's to run. Never run one yourself, with or without `--yes`, even after they agree in the chat. Run it with `--dry-run`, show the change, then give the exact command (`--env production` and the resource id, no `--yes`) for the user to run in their own terminal window, where the CLI asks `[y/N]`. Not as `! <command>` in Claude Code: that has no terminal, so the CLI refuses it with exit 2. Steps: § Changing a live webhook or payment code. Production webhooks never use `--auth-type none`.
 - Secrets go in on stdin (`--secret -`, e.g. `printf %s "$SEPAY_WEBHOOK_SECRET" | sepay webhook create … --secret -`), never as an argument: arguments land in shell history and `ps`.
 - Do not print API keys: `apikey` list / get output is masked; `create` prints the new key once, so do not echo it back into the chat or logs.
 
@@ -79,7 +79,7 @@ Confirm with `sepay help exit-codes` for the installed version.
 
 ## Commands the user runs
 
-Never run these yourself. Give the exact command for the user to run: in Claude Code or Codex CLI as `! <command>` in the chat, elsewhere in their own terminal.
+Never run these yourself. Give the exact command for the user to run: in Claude Code or Codex CLI as `! <command>` in the chat, elsewhere in their own terminal. Production writes go in their own terminal window, not `! `, because the CLI asks `[y/N]` there.
 
 | Command | Why |
 |---|---|
@@ -87,9 +87,7 @@ Never run these yourself. Give the exact command for the user to run: in Claude 
 | `sepay auth token` | Prints a token (Security 3) |
 | `sepay auth revoke`, `sepay logout --all` | Ends sessions on every machine, CI included |
 | `sepay config set default_env production` | Every later command then runs on live money |
-| `sepay api -X POST/PUT/DELETE --env production` | Skips every per-command guard |
-| `sepay webhook delete --env production` | Orders stop being confirmed at once |
-| `sepay webhook replay --env production` | Re-runs the live handler; one that does not dedupe credits the order twice. `--force` needs the transaction id typed on a terminal |
+| Every production write: a command whose `confirms` is `terminal` in `sepay --map=json --env production` (webhook, paycode and bank-account writes, `sepay api -X POST/PUT/PATCH/DELETE`) | Live orders stop or start being confirmed at once; § Changing a live webhook or payment code. `webhook replay --force` also needs the transaction id typed on a terminal |
 
 `sepay webhook get` returns `secret_key` in clear: read it with `--json` and leave that field out of anything you show or save.
 
@@ -113,6 +111,43 @@ Never run these yourself. Give the exact command for the user to run: in Claude 
 - `sepay paycode list`: the on/off switch and every structure (prefix, suffix range, character type, active).
 - `sepay paycode update [prefix]`: edits one structure (`--structure <prefix>` picks which) and keeps the rest; flags you leave out keep the stored value; `--enable` / `--disable` toggle detection. It sends the version it read, so a concurrent change fails with a conflict: run `list` again instead of forcing.
 - `sepay paycode create <prefix> --suffix-from N --suffix-to M --character-type NumberOnly|NumberAndLetter --active` (or `--active=false`): adds a structure at the end, all flags required; a prefix the company already has, in any case, is refused. If `sepay paycode --help` lists no `create`, add it in my.sepay.vn instead.
-- Prefix 2-5 letters, suffix bounds 1-30. On production both writes change matching immediately (transfers already sent with an old prefix stop matching), so they confirm first (Rule 3).
+- Prefix 2-5 letters, suffix bounds 1-30. On production both writes change matching immediately (transfers already sent with an old prefix stop matching): the user runs them, after the steps in § Changing a live webhook or payment code.
+
+## Changing a live webhook or payment code
+
+Every production change of a webhook (URL, other settings, delete, create or re-create) or of payment codes (edit a structure, add one, turn detection on / off for the company) follows these steps. A wrong change stops orders being confirmed at once. Say which step you are on. The user already made the change and nothing is confirmed since: record the state now (step 1), then go to step 4; the wait time counts from the change, and past it step 5 applies. With no record from before the change, ask the user for the old values (e.g. the old URL) to build the undo command.
+
+1. **Record the state now**, all four below before step 2, for a payment-code change too (reads only, kept in the chat, never a secret):
+   - the config: `sepay webhook get <id> --env production --json` (leave `secret_key` out; its bank accounts by their id in `sepay bank-account list`, `SKILL.md` Rule 8 under Questions on the user's own data), or `sepay paycode list --env production --json`;
+   - orders waiting for payment: ask the user for their codes and amounts, at the latest in the reply that gives the command (step 3), so step 4 can follow them; with the shop's code or database open, offer a read-only query instead;
+   - deliveries already failing (for a webhook and a payment-code change alike): `sepay webhook logs --env production --since 24h --status failed`, so an old failure is not blamed on the change;
+   - how busy the account is: money-in transactions of the last 7 days (`sepay transaction list --env production --transfer-type in --from <date 7 days ago> --per-page 100 --fields id --json`, a page of fewer than 100 rows is the last, so its count is final; only a full page needs the next) and count the ids: the other fields come back empty with `--fields id`, which is expected. The count gives the wait time below; note the newest id.
+2. **Dry run**: run the exact write with `--dry-run` (sends nothing; the reads it makes still run) and say the BEFORE / AFTER in plain words, plus any `the real run would refuse` line. A CLI whose `--help` has no `--dry-run`: show the stored config and the fields that will change, and suggest upgrading (§ Install).
+3. **The user runs the change**: one command with `--env production` and the webhook id or `--structure <prefix>`, without `--yes`, for their own terminal window, where they answer `[y/N]`: the dry-run command of step 2 with only `--dry-run` taken out, word for word. Give the undo command (table below) with it. Secrets go in on stdin (`--secret -`). To re-create a webhook: create the new one, check it (step 4), and only then delete the old one; until then each transaction goes to both, so first make sure the handler dedupes on `id` (`webhook.md` › Best practice).
+4. **Check the first real transaction after the change** and tell the user all three:
+   - the order code was extracted: in `sepay transaction list --env production --transfer-type in --since-id <newest id from step 1>`, its `code` is the order code in the memo (after a payment-code change, a code of the changed structure);
+   - the webhook answered 2xx: `sepay webhook logs --env production --transaction <id>` shows `status` success and a 2xx `response_status_code`;
+   - the order went to paid by itself: on a webhook with **Dùng để xác thực thanh toán** the transaction's `webhook_success` is 1 (my.sepay.vn: **Xác thực tự động** Thành công); then ask the user to open that order in the shop's admin and confirm it shows paid.
+5. **No transaction within the wait time**: never suggest **Gửi thử** / `sepay webhook test` or a simulated transaction here: suggest only one real small order (2.000–10.000đ) on the user's site, paid by scanning that order's QR, then check it as in step 4; only a real transaction proves the change. Compare the time waited with the wait time (e.g. "40 minutes so far; 21 transactions in 7 days, under 70, so no wait"). Never send money yourself or run anything that does.
+6. **A check fails, or the user says one did**: this reply always gives the undo command written out in full, even when the data points elsewhere (no transaction yet, money on an account the webhook does not receive); never hold it back or promise it for later ("if a check fails I will give…"): give it, then say why it may not help; the user decides. It holds, in this order: the three checks of step 4, one line each, as passed, failed or not shown yet with what the data shows (e.g. no transaction reached SePay yet, so none can be shown and undoing may not help); the undo command, its dry-run run in this turn before you write the reply, as in step 2 (never say you dry-ran a command you did not run), for the user to run the same way (step 3); and that the three checks are run again on the next real transaction.
+
+The reply that gives the command (step 3) holds, in this order: what changes (BEFORE → AFTER), the command, its undo command written out in full, not described (a delete and a create too: the delete's undo is the whole `webhook create` with `--secret -`), the wait time with the 7-day count it comes from, the three checks of step 4, and the question about waiting orders.
+
+| Money-in transactions in the last 7 days | Wait for the first real one |
+|---|---|
+| 350 or more (50+ a day) | 15 minutes |
+| 70–349 (10–49 a day) | 30 minutes |
+| under 70 | no wait: suggest the small order right away (step 5) |
+
+| Change | Undo (the user runs it: `--env production`, no `--yes`) |
+|---|---|
+| `webhook update <id>` | `webhook update <id>` with the old values from step 1 |
+| `webhook update <id> --secret -` (new secret) | The old secret back only when it was not leaked. A leaked one is never restored: the shop's server switches to the new secret at the same moment, since deliveries fail while the two differ. The new secret is one the user put where the server reads it, piped from there (`printf %s "$SEPAY_WEBHOOK_SECRET" \| …`), never a random value only the CLI sees |
+| `webhook delete <id>` | `webhook create` with the config from step 1 and the secret the shop's server uses, on stdin (`--secret -`); it gets a new id |
+| `webhook create` | `webhook delete <new id>` |
+| `paycode update --structure <prefix>` | the same command with every old value from step 1, always with `--active` (or `--active=false`) as recorded, even when it is on; only the undo carries it, the change command carries just the fields that change |
+| `paycode update --structure <old> --prefix <new>` (new prefix) | `paycode update --structure <new> --prefix <old>` |
+| `paycode update --enable` / `--disable` | the opposite flag |
+| `paycode create <prefix>` | `paycode update --structure <prefix> --active=false`; to remove it, delete it in my.sepay.vn → Công ty → Cấu hình chung |
 
 Reference for the installed version: `sepay <command> --help` and `sepay help <topic>`.

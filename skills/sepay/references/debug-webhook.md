@@ -1,5 +1,7 @@
 # Debugging SePay webhooks
 
+Orders stopped being confirmed right after a live webhook or payment-code change: follow `cli.md` › Changing a live webhook or payment code, steps 4–6 (step 6 always gives the undo command), and use this file only for the diagnosis inside them.
+
 Ask for the symptom if not given ("no request arrives", "401", "orders not marked paid", "duplicates"). First split the problem in two:
 
 - **A. SePay did not send** (nothing in the delivery history for that transaction): configuration or filters.
@@ -10,7 +12,7 @@ Look at the facts before guessing: the webhook's **Lịch sử gửi** (delivery
 ## Checklist, in order (most problems are in the first steps)
 
 1. Webhook is **on** (status Bật; saving does not re-enable a webhook you turned off).
-2. URL reachable: "Gửi thử" (send test) from the webhook menu. DNS error, connection refused, SSL error → URL / server / certificate.
+2. URL reachable: "Gửi thử" (send test) from the webhook menu. DNS error, connection refused, SSL error → URL / server / certificate. A test send only shows the URL answers: after a live webhook or payment-code change, only a real transaction proves it (`cli.md` › Changing a live webhook or payment code, step 5).
 3. Event type matches (money in / out / both).
 4. The bank account that received the money is in the webhook's account list.
 5. VA filter: the transaction went to a VA the webhook listens to (or the filter is off).

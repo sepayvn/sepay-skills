@@ -65,13 +65,26 @@ DISABLE_TELEMETRY=1 npx skills remove sepay
 
 | Skill | Phạm vi |
 |---|---|
-| `sepay` | Chọn cách tích hợp, webhook, VietQR, cổng thanh toán và IPN, SePay API, hoàn tiền, Bank Hub, hóa đơn điện tử, Speaker API, OAuth2, plugin, Test mode và go-live, `sepay` CLI, SePay MCP |
+| `sepay` | **Tích hợp:** chọn cách tích hợp, webhook, VietQR, cổng thanh toán và IPN, SePay API, hoàn tiền, Bank Hub, hóa đơn điện tử, Speaker API, OAuth2, plugin, Test mode và go-live, `sepay` CLI, SePay MCP.<br>**Nghiệp vụ trên dữ liệu SePay của bạn:** báo cáo doanh thu, tra soát giao dịch và chốt ca, đối soát tiền với hóa đơn điện tử, câu hỏi kế toán |
 
 Cách skill `sepay` làm việc:
 
 - Làm trên Test mode (sandbox), trừ khi bạn yêu cầu production.
 - Có thể gợi ý cài `sepay` CLI (công cụ dòng lệnh chính thức của SePay, [sepayvn/sepay-cli](https://github.com/sepayvn/sepay-cli)) hoặc kết nối SePay MCP, nhưng không cài gì khi bạn chưa đồng ý.
 - Các thông tin hay thay đổi (ngân hàng hỗ trợ, hạn mức, host) được đọc từ developer.sepay.vn lúc trả lời.
+
+### Hỏi về dữ liệu SePay của bạn
+
+Kết nối SePay MCP ([my.sepay.vn](https://my.sepay.vn/ai-agent) → **AI Agent** → **Tạo kết nối**) hoặc đăng nhập `sepay` CLI, rồi hỏi bằng lời thường. AI đọc dữ liệu và mọi con số lấy từ SePay trong phiên đó; việc ghi duy nhất là gửi lại một webhook bị lỗi, chỉ khi bạn đồng ý.
+
+| Nghiệp vụ | Ví dụ câu hỏi |
+|---|---|
+| Báo cáo doanh thu: ba cách tính (có mã thanh toán, tất cả tiền vào, qua tài khoản ảo), doanh thu gộp, hoàn tiền và thực thu, so kỳ, theo điểm bán, theo ca | "Doanh thu tháng 10 bao nhiêu?", "Tháng này so với tháng trước tăng hay giảm?", "Vì sao doanh thu SePay khác tổng tiền vào trên sao kê?" |
+| Tra soát giao dịch và chốt ca: tìm theo mã đơn, mã thanh toán, tên trong nội dung, số tiền gần đúng và giờ | "Khách bảo đã chuyển 500.000đ lúc 14 giờ, tiền về chưa?", "Điểm bán 1 ca sáng thu được bao nhiêu?" |
+| Đối soát tiền với hóa đơn điện tử: hóa đơn điều chỉnh, thay thế, ghép khoản đã thu với hóa đơn, khoản đã thu chưa xuất hóa đơn | "Tháng 10 còn khoản nào đã thu mà chưa xuất hóa đơn?" |
+| Câu hỏi kế toán: số liệu gửi kế toán, thuế GTGT của hóa đơn đã xuất, hoàn tiền chưa điều chỉnh, tiền và đơn qua cổng thanh toán | "Gửi kế toán số liệu quý 3", "Tháng này cổng thanh toán thu bao nhiêu, bao nhiêu đơn?" |
+
+AI không tư vấn thuế, không tự xuất hay sửa hóa đơn, không tự hoàn tiền; với các việc đó, AI chỉ đúng trang trên my.sepay.vn.
 
 ## Bảo mật
 

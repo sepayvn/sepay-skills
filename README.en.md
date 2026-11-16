@@ -65,13 +65,26 @@ DISABLE_TELEMETRY=1 npx skills remove sepay
 
 | Skill | Covers |
 |---|---|
-| `sepay` | Choosing an integration, webhooks, VietQR, payment gateway and IPN, SePay API, refunds, Bank Hub, e-invoices, Speaker API, OAuth2, plugins, Test mode and go-live, the `sepay` CLI, SePay MCP |
+| `sepay` | **Integration:** choosing an integration, webhooks, VietQR, payment gateway and IPN, SePay API, refunds, Bank Hub, e-invoices, Speaker API, OAuth2, plugins, Test mode and go-live, the `sepay` CLI, SePay MCP.<br>**Business questions on your SePay data:** revenue reports, payment lookup and shift close-out, reconciling money with e-invoices, accounting questions |
 
 How the `sepay` skill behaves:
 
 - It works in Test mode (sandbox) unless you ask for production.
 - It may suggest installing the `sepay` CLI (SePay's official command-line tool, [sepayvn/sepay-cli](https://github.com/sepayvn/sepay-cli)) or connecting SePay MCP, and installs nothing without your approval.
 - It reads values that change (supported banks, limits, hosts) from developer.sepay.vn when it answers.
+
+### Questions on your own SePay data
+
+Connect SePay MCP ([my.sepay.vn](https://my.sepay.vn/ai-agent) → **AI Agent** → **Tạo kết nối**, Create connection) or sign in to the `sepay` CLI, then ask in plain words. The AI reads your data and every figure comes from SePay in that session; the only write is re-sending a failed webhook, and only when you agree.
+
+| Area | Example questions |
+|---|---|
+| Revenue reports: three methods (with payment code, all money in, via virtual accounts), gross, refunds and net, period comparisons, per point of sale, per shift | "What was revenue in October?", "Is this month up or down on last month?", "Why does SePay revenue differ from money in on my bank statement?" |
+| Payment lookup and shift close-out: by order code, payment code, name in the memo, near amount and time | "A customer says they sent 500,000 VND at 2 pm. Has it arrived?", "How much did point of sale 1 take in the morning shift?" |
+| Reconciling money with e-invoices: adjusting and replacing invoices, matching payments to invoices, money received with no invoice issued | "Which payments in October have no invoice yet?" |
+| Accounting questions: figures for the accountant, VAT of issued invoices, refunds not yet adjusted, money and orders through the payment gateway | "Send the accountant the Q3 figures", "How much did the payment gateway take this month, and how many orders?" |
+
+The AI gives no tax advice and never issues or changes invoices or makes refunds itself; for those it points to the right page on my.sepay.vn.
 
 ## Security
 
