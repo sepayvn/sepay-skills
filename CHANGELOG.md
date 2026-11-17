@@ -4,6 +4,12 @@ Tiếng Việt | [English](#changelog)
 
 Phiên bản theo [semver](https://semver.org/lang/vi/). Số phiên bản nằm ở `.claude-plugin/plugin.json` và `metadata.version` trong `skills/sepay/SKILL.md`. Mỗi bản có tag `v<phiên bản>` trên trang [Releases](https://github.com/sepayvn/sepay-skills/releases), kèm `sepay.zip`, `sepay.md`, `sepay-claude-plugin.zip` (từ 1.0.2) và `SHA256SUMS`.
 
+## [1.0.3] - 2026-11-17
+
+### Sửa
+
+- Cài bằng `npx skills add https://github.com/sepayvn/sepay-skills --skill sepay` chạy được trở lại. Ở bản 1.0.2, lệnh này báo lỗi đọc `SKILL.md` và không tìm thấy skill `sepay`.
+
 ## [1.0.2] - 2026-11-16
 
 ### Thêm
@@ -50,6 +56,7 @@ Bản đầu tiên có số phiên bản.
 - File tải về `sepay.zip` và `sepay.md` cho ứng dụng có mục Skills và ứng dụng chat.
 - Đóng gói thành plugin Claude, cài bằng `/plugin install sepay --marketplace sepayvn/sepay-skills`.
 
+[1.0.3]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.3
 [1.0.2]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.2
 [1.0.1]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.1
 
@@ -60,6 +67,12 @@ Bản đầu tiên có số phiên bản.
 [Tiếng Việt](#nhật-ký-thay-đổi) | English
 
 Versions follow [semver](https://semver.org). The version lives in `.claude-plugin/plugin.json` and in `metadata.version` of `skills/sepay/SKILL.md`. Each release is tagged `v<version>` on the [Releases](https://github.com/sepayvn/sepay-skills/releases) page and ships `sepay.zip`, `sepay.md`, `sepay-claude-plugin.zip` (since 1.0.2) and `SHA256SUMS`.
+
+## [1.0.3] - 2026-11-17
+
+### Fixed
+
+- Installing with `npx skills add https://github.com/sepayvn/sepay-skills --skill sepay` works again. In 1.0.2 the command failed to read `SKILL.md` and found no `sepay` skill.
 
 ## [1.0.2] - 2026-11-16
 
@@ -107,5 +120,6 @@ First versioned release.
 - Downloadable `sepay.zip` and `sepay.md` for apps with a Skills feature and for chat apps.
 - Packaged as a Claude plugin: `/plugin install sepay --marketplace sepayvn/sepay-skills`.
 
+[1.0.3]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.3
 [1.0.2]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.2
 [1.0.1]: https://github.com/sepayvn/sepay-skills/releases/tag/v1.0.1

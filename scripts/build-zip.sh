@@ -75,6 +75,14 @@ validate_skill() {
 
   desc="$(frontmatter_field "$skill_md" description)"
   [[ -n "$desc" ]] || fail "$name: frontmatter description is missing (it must be on one line)"
+  # A strict YAML parser (the `npx skills` CLI) rejects a plain scalar holding ": " or " #" and
+  # then skips the whole skill, so such a description must be double-quoted.
+  if [[ "$desc" == \"* ]]; then
+    [[ "$desc" == *\" ]] || fail "$name: description opens a double quote but does not close it"
+    desc="${desc:1:${#desc}-2}"
+  elif [[ "$desc" == *": "* || "$desc" == *" #"* || "$desc" =~ ^[][\{\}\&\*\!\|\>\'\"%@\`#,?:-] ]]; then
+    fail "$name: description holds ': ', ' #' or starts with a YAML indicator; wrap it in double quotes"
+  fi
   desc_len="$(printf '%s' "$desc" | wc -m | tr -d ' ')"
   (( desc_len <= 1024 )) || fail "$name: description is $desc_len characters, the limit is 1024"
 

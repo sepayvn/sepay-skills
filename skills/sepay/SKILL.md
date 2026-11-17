@@ -1,9 +1,9 @@
 ---
 name: sepay
-description: SePay (Vietnam payments): integration, CLI and the rules for questions on the user's own SePay data. Load it before calling any SePay MCP tool; its rules come before your own reasoning. Use for bank-transfer payments, xác nhận thanh toán, chuyển khoản, biến động số dư, webhooks and fixing or debugging a webhook handler (lỗi webhook, Xác thực tự động Thành công / Thất bại, lịch sử gửi on my.sepay.vn), VietQR / mã QR, VA / tài khoản ảo, payment gateway / cổng thanh toán, thẻ, NAPAS, SePay API, revenue / doanh thu, reconciliation / đối soát, refunds / hoàn tiền, Bank Hub, e-invoices / hóa đơn điện tử (tra cứu, còn hiệu lực, tổng / số hóa đơn theo kỳ, thay thế / điều chỉnh / nháp, đã xuất hóa đơn chưa, đã thu chưa xuất, công nợ, kê khai, số liệu cho kế toán), Speaker / loa thông báo, OAuth2, plugins (WooCommerce, HostBill, WordPress…), the `sepay` CLI, SePay MCP, supported banks / ngân hàng hỗ trợ, SePay tokens / API keys / credentials and anything sent to SePay support / bên hỗ trợ SePay.
+description: "SePay (Vietnam payments): integration, CLI and the rules for questions on the user's own SePay data. Load it before calling any SePay MCP tool; its rules come before your own reasoning. Use for bank-transfer payments, xác nhận thanh toán, chuyển khoản, biến động số dư, webhooks and fixing or debugging a webhook handler (lỗi webhook, Xác thực tự động Thành công / Thất bại, lịch sử gửi on my.sepay.vn), VietQR / mã QR, VA / tài khoản ảo, payment gateway / cổng thanh toán, thẻ, NAPAS, SePay API, revenue / doanh thu, reconciliation / đối soát, refunds / hoàn tiền, Bank Hub, e-invoices / hóa đơn điện tử (tra cứu, còn hiệu lực, tổng / số hóa đơn theo kỳ, thay thế / điều chỉnh / nháp, đã xuất hóa đơn chưa, đã thu chưa xuất, công nợ, kê khai, số liệu cho kế toán), Speaker / loa thông báo, OAuth2, plugins (WooCommerce, HostBill, WordPress…), the `sepay` CLI, SePay MCP, supported banks / ngân hàng hỗ trợ, SePay tokens / API keys / credentials and anything sent to SePay support / bên hỗ trợ SePay."
 metadata:
   author: sepay
-  version: "1.0.2"
+  version: "1.0.3"
 ---
 
 # SePay
