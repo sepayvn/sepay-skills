@@ -1,7 +1,7 @@
 {
   "name": "sepay",
   "displayName": "SePay",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "SePay là công ty hạ tầng Open Banking hàng đầu tại Việt Nam, cung cấp API ngân hàng và tự động hoá dòng tiền cho doanh nghiệp: thanh toán tự xác nhận, đối soát tự chạy, hoá đơn tự xuất. Plugin giúp Claude tích hợp SePay (webhook, VietQR, tài khoản ảo, cổng thanh toán, hoá đơn điện tử) và trả lời về dữ liệu SePay của bạn. SePay: leading Open Banking infrastructure in Vietnam, bank APIs and cash-flow automation for businesses. Helps Claude integrate SePay and answer questions on your data.",
   "author": {
     "name": "SePay",
